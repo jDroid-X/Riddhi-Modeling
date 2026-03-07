@@ -197,6 +197,97 @@ nav a:hover {
     overflow: hidden;
     cursor: pointer;
     background: #1a1a1a;
+    padding: 10px;
+    /* Space for borders */
+}
+
+/* Semi-Borders Base */
+.gallery-item::before,
+.gallery-item::after {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    z-index: 5;
+    transition: var(--transition);
+}
+
+.gallery-item::before {
+    top: 0;
+    left: 0;
+    border-top: 3px solid var(--accent-color);
+    border-left: 3px solid var(--accent-color);
+}
+
+.gallery-item::after {
+    bottom: 0;
+    right: 0;
+    border-bottom: 3px solid var(--accent-color);
+    border-right: 3px solid var(--accent-color);
+}
+
+/* Diverse Designs & Colors */
+.gallery-item:nth-child(1)::before,
+.gallery-item:nth-child(1)::after {
+    border-color: #C5A059;
+    border-style: solid;
+}
+
+.gallery-item:nth-child(2)::before,
+.gallery-item:nth-child(2)::after {
+    border-color: #8E44AD;
+    border-style: dashed;
+}
+
+.gallery-item:nth-child(3)::before,
+.gallery-item:nth-child(3)::after {
+    border-color: #2E86C1;
+    border-style: double;
+    border-width: 5px;
+}
+
+.gallery-item:nth-child(4)::before,
+.gallery-item:nth-child(4)::after {
+    border-color: #E67E22;
+    border-style: solid;
+}
+
+.gallery-item:nth-child(5)::before,
+.gallery-item:nth-child(5)::after {
+    border-color: #27AE60;
+    border-style: dotted;
+}
+
+.gallery-item:nth-child(6)::before,
+.gallery-item:nth-child(6)::after {
+    border-color: #C0392B;
+    border-style: solid;
+}
+
+.gallery-item:nth-child(7)::before,
+.gallery-item:nth-child(7)::after {
+    border-color: #F1C40F;
+    border-style: dashed;
+}
+
+.gallery-item:nth-child(8)::before,
+.gallery-item:nth-child(8)::after {
+    border-color: #1ABC9C;
+    border-style: double;
+}
+
+.gallery-item:nth-child(9)::before,
+.gallery-item:nth-child(9)::after {
+    border-color: #D35400;
+    border-style: solid;
+}
+
+.gallery-item:hover::before {
+    transform: translate(-5px, -5px);
+}
+
+.gallery-item:hover::after {
+    transform: translate(5px, 5px);
 }
 
 .gallery-item.tall {
