@@ -300,6 +300,13 @@ nav a:hover {
     border-style: solid;
 }
 
+.gallery-item:nth-child(10)::before,
+.gallery-item:nth-child(10)::after {
+    border-color: #5DADE2;
+    border-style: solid;
+    border-width: 4px;
+}
+
 .gallery-item:hover::before {
     transform: translate(-5px, -5px);
 }
