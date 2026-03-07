@@ -1,44 +1,57 @@
 import os
 import requests
 import sys
+import webbrowser
+import http.server
+import socketserver
+import threading
 
-# FaceOnWeb Engine
-# This script is designed to collect public web photos from specified sources.
-# Note: For full automation, a dedicated search API or Selenium would be required.
-# Here we implement a downloader that can take search result URLs and save them.
+# FaceOnWeb Engine - Web UI Version
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+WEB_PHOTO_DIR = os.path.join(BASE_DIR, "web_photo")
+HTML_FILE = os.path.join(BASE_DIR, "FaceOnWeb.html")
+PORT = 8080
 
-WEB_PHOTO_DIR = "web_photo"
+class SimpleHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=BASE_DIR, **kwargs)
 
-if not os.path.exists(WEB_PHOTO_DIR):
-    os.makedirs(WEB_PHOTO_DIR)
-
-def download_image(url, filename):
-    try:
-        response = requests.get(url, stream=True, timeout=10)
-        if response.status_code == 200:
-            filepath = os.path.join(WEB_PHOTO_DIR, filename)
-            with open(filepath, 'wb') as f:
-                for chunk in response.iter_content(1024):
-                    f.write(chunk)
-            print(f"Successfully saved: {filename}")
-        else:
-            print(f"Failed to download from {url}")
-    except Exception as e:
-        print(f"Error downloading {url}: {e}")
+def start_server():
+    with socketserver.TCPServer(("", PORT), SimpleHandler) as httpd:
+        print(f"FaceOnWeb Engine serving at http://localhost:{PORT}")
+        httpd.serve_forever()
 
 def main():
-    print("--- FaceOnWeb Engine Initialized ---")
-    print(f"Target Directory: {WEB_PHOTO_DIR}")
+    print("--- FaceOnWeb Engine Intelligence Initializing ---")
     
-    # Placeholder for automated search logic
-    # In a real-world scenario, you would integrate with a Google Custom Search API
-    # or a social media API to find "Riddhi Modeling" images.
-    
-    # Example usage for defined URLs:
-    # download_image("https://example.com/riddhi_modeling_1.jpg", "web_riddhi_1.jpg")
-    
-    print("\nTo use this engine, add image URLs to the download logic.")
-    print("Automated scraping of Instagram/Snapchat/Facebook requires API credentials.")
+    # 1. Ensure directories exist
+    if not os.path.exists(WEB_PHOTO_DIR):
+        os.makedirs(WEB_PHOTO_DIR)
+        print(f"Created directory: {WEB_PHOTO_DIR}")
+
+    # 2. Check for reference image
+    ref_image = os.path.join(WEB_PHOTO_DIR, "Face.jpeg")
+    if not os.path.exists(ref_image):
+        print("\n[WARNING] 'Face.jpeg' not found in web_photo folder.")
+        print("Please place the target photo in:")
+        print(f"  {ref_image}")
+        # Create a tiny dummy file for UI placeholder if needed, but user said they added it.
+
+    # 3. Start local server in background
+    server_thread = threading.Thread(target=start_server, daemon=True)
+    server_thread.start()
+
+    # 4. Open UI in Browser
+    print(f"\nOpening FaceOnWeb UI...")
+    webbrowser.open(f"http://localhost:{PORT}/FaceOnWeb.html")
+
+    # 5. Keep main thread alive
+    print("\nPress Ctrl+C to stop the engine.")
+    try:
+        while True:
+            pass
+    except KeyboardInterrupt:
+        print("\nFaceOnWeb Engine stopped.")
 
 if __name__ == "__main__":
     main()
