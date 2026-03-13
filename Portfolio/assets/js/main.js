@@ -74,63 +74,64 @@ const inputs = {
     dress: document.getElementById('statDress')
 };
 
-// 3. Optimized Image Discovery (Parallel Protocol)
+// 3. SECURE PRE-FLIGHT: Image Discovery (Optimized for Mobile)
 async function discoverImages() {
     const discovered = [];
     const extensions = ['jpeg', 'png', 'jpg'];
-    const maxConcurrent = 5; // Mobile-friendly parallel discovery
+    const maxConcurrent = 3; // Drastically reduced for mobile stability
     let i = 1;
-    let stopDiscovery = false;
 
     const checkImage = (url, caption, ext) => {
         return new Promise(res => {
             const img = new Image();
-            img.onload = () => res({ src: url, caption, ext });
+            img.onload = () => {
+                // Determine if it's a "Tall" image during discovery to save memory later
+                const isTall = img.height > img.width;
+                res({ src: url, caption, ext, isTall });
+            };
             img.onerror = () => res(null);
             img.src = url;
+            // Timeout to prevent hanging connections on slow mobile networks
+            setTimeout(() => res(null), 5000);
         });
     };
 
-    while (i < 100) {
+    while (i <= 100) { // Check up to 100 images
         const batch = [];
         for (let j = 0; j < maxConcurrent; j++) {
             const idx = i + j;
-            if (idx >= 100) break;
-            // Check main extensions in parallel
+            if (idx > 100) break;
             extensions.forEach(ext => {
                 batch.push(checkImage(`assets/images/Img${idx}.${ext}`, `Img${idx}`, ext));
             });
-            // Check alt versions (Img1a.png)
-            batch.push(checkImage(`assets/images/Img${idx}a.png`, `Img${idx}a`, 'png'));
         }
 
         const results = await Promise.all(batch);
-        const foundInBatch = results.filter(r => r !== null);
-        
-        if (foundInBatch.length > 0) {
-            discovered.push(...foundInBatch);
-        }
-        
+        results.forEach(r => { if (r) discovered.push(r); });
         i += maxConcurrent;
+        // Standard Protocol: Breathe delay for mobile CPU
+        await new Promise(r => setTimeout(r, 50));
     }
     return discovered;
 }
 
+const galleryObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            galleryObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.1 });
+
 function renderGallery() {
     if (!galleryContainer) return;
     galleryContainer.innerHTML = '';
+    
     photos.forEach((photo, idx) => {
         const item = document.createElement('div');
         item.className = 'gallery-item';
-        
-        // Detect tall images
-        const img = new Image();
-        img.src = photo.src;
-        img.onload = () => {
-            if (img.height > img.width) {
-                item.classList.add('tall');
-            }
-        };
+        if (photo.isTall) item.classList.add('tall');
 
         const isBottom = idx % 2 === 0;
         item.innerHTML = `
@@ -149,22 +150,14 @@ function renderGallery() {
                 <button class="delete-photo-btn" onclick="deletePhoto(event, '${photo.caption}')">&times;</button>
             </div>
         `;
+        
         item.onclick = (e) => {
             e.preventDefault();
             openLightbox(idx);
         };
+        
         galleryContainer.appendChild(item);
-
-        // Scroll Reveal Animation
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('revealed');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.1 });
-        observer.observe(item);
+        galleryObserver.observe(item);
     });
 }
 
@@ -571,23 +564,33 @@ if (saveAbout) {
     };
 }
 
-// 7. Initialize Everything (Standard Protocol)
+// 7. Initialize Everything (Standard Protocol: Robust Boot)
 window.addEventListener('DOMContentLoaded', async () => {
-    // A. Load saved content
-    loadAboutContent();
+    try {
+        // A. Load saved content
+        loadAboutContent();
 
-    // B. Discover and Render Gallery
-    photos = await discoverImages();
-    renderGallery(); 
-    
-    // C. Random Hero Background Logic
-    if (photos.length > 0) {
-        const heroImg = document.getElementById('heroImage');
-        if (heroImg) {
-            const randomIdx = Math.floor(Math.random() * photos.length);
-            heroImg.src = photos[randomIdx].src;
-            heroImg.onload = () => heroImg.style.opacity = '1';
-            if (heroImg.complete) heroImg.style.opacity = '1';
+        // B. Discover and Render Gallery
+        photos = await discoverImages();
+        renderGallery(); 
+        
+        // C. Random Hero Background Logic
+        if (photos.length > 0) {
+            const heroImg = document.getElementById('heroImage');
+            if (heroImg) {
+                const randomIdx = Math.floor(Math.random() * photos.length);
+                heroImg.src = photos[randomIdx].src;
+                heroImg.onload = () => heroImg.style.opacity = '1';
+                if (heroImg.complete) heroImg.style.opacity = '1';
+            }
         }
+    } catch (bootErr) {
+        console.error("Critical Boot Error:", bootErr);
     }
 });
+
+// Global Safety Net
+window.onerror = function(msg, url, line) {
+    console.log("Protocol Error Ignored for Stability: " + msg);
+    return true; // Prevent crash popups on mobile
+};
