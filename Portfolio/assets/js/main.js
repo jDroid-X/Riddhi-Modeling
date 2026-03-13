@@ -213,6 +213,8 @@ if (submitAdmin) {
         } else alert('Incorrect Password');
     };
 }
+const cancelAdmin = document.getElementById('cancelAdmin');
+if (cancelAdmin) cancelAdmin.onclick = () => adminModal.style.display = 'none';
 if (exitAdmin) {
     exitAdmin.onclick = () => {
         adminToolbar.style.display = 'none';

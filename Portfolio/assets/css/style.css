@@ -484,13 +484,27 @@ nav a:hover { color: var(--accent-color); }
     100% { transform: translateX(-50%); }
 }
 
-/* Admin */
+/* --- Admin UI - Premium Design --- */
 .admin-btn {
     background: transparent;
     border: 1px solid var(--accent-color);
     color: var(--accent-color);
-    padding: 0.5rem 1.5rem;
+    padding: 0.8rem 2rem;
     cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-btn:hover {
+    background: var(--accent-color);
+    color: black;
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.4);
 }
 
 .admin-modal {
@@ -498,59 +512,209 @@ nav a:hover { color: var(--accent-color); }
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0, 0, 0, 0.95);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
     z-index: 3000;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
 .admin-modal-content {
-    background: #1a1a1a;
-    padding: 2.5rem;
-    border: 1px solid var(--accent-color);
-    width: 90%; max-width: 600px;
+    background: #111;
+    padding: 3rem;
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.admin-modal-content h3 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.admin-modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    text-align: left;
+    font-size: 0.9rem;
 }
 
 .admin-form {
     max-height: 70vh;
     overflow-y: auto;
+    padding-right: 10px;
 }
 
-.admin-form input, .admin-form textarea {
+/* Custom Scrollbar for Admin Form */
+.admin-form::-webkit-scrollbar { width: 4px; }
+.admin-form::-webkit-scrollbar-track { background: #0d0d0d; }
+.admin-form::-webkit-scrollbar-thumb { background: var(--accent-color); }
+
+.admin-form input, 
+.admin-form textarea {
     width: 100%;
-    padding: 0.8rem;
+    padding: 1rem;
     background: #0d0d0d;
+    border: 1px solid #222;
+    color: white;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+
+.admin-form input:focus, 
+.admin-form textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: #151515;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 1rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+}
+
+#submitAdmin, #saveAbout {
+    background: var(--accent-color);
+    color: black;
+}
+
+#submitAdmin:hover, #saveAbout:hover {
+    filter: brightness(1.2);
+}
+
+#cancelAdmin, #cancelAbout {
+    background: transparent;
     border: 1px solid #333;
     color: white;
-    margin-bottom: 1rem;
 }
 
+#cancelAdmin:hover, #cancelAbout:hover {
+    background: #222;
+}
+
+/* Edit About Specifics */
+.edit-about-modal {
+    max-width: 800px;
+}
+
+.form-section label {
+    display: block;
+    font-family: var(--font-heading);
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+    padding-bottom: 0.3rem;
+}
+
+.stats-input-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-field span {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+/* Admin Toolbar */
 .admin-toolbar {
     display: none;
     position: fixed;
     bottom: 0; left: 0;
     width: 100%;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border-top: 1px solid var(--accent-color);
     padding: 1rem 5%;
     z-index: 2500;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+}
+
+.toolbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toolbar-content span {
+    font-family: var(--font-heading);
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .toolbar-actions { display: flex; gap: 1rem; }
 
+.toolbar-actions button {
+    background: transparent;
+    border: 1px solid rgba(197, 160, 89, 0.5);
+    color: var(--text-primary);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.toolbar-actions button:hover {
+    background: var(--accent-color);
+    color: black;
+    border-color: var(--accent-color);
+}
+
 .delete-photo-btn {
     display: none;
     position: absolute;
-    top: 10px; right: 10px;
-    background: rgba(220, 53, 69, 0.8);
+    top: 15px; right: 15px;
+    background: rgba(220, 53, 69, 0.9);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 25px; height: 25px;
+    width: 32px; height: 32px;
     cursor: pointer;
+    z-index: 100;
+    font-size: 1.2rem;
+    transition: var(--transition);
 }
 
-body.admin-mode .delete-photo-btn { display: block; }
+.delete-photo-btn:hover {
+    transform: scale(1.1);
+    background: #ff0000;
+}
+
+body.admin-mode .delete-photo-btn { display: flex; align-items: center; justify-content: center; }
 
 @media (max-width: 768px) {
     .nav-container {
