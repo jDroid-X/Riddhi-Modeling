@@ -48,6 +48,7 @@ const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const captionDisplay = document.getElementById('lightbox-caption');
 let currentIdx = 0;
+let zoomLevel = 1;
 
 // Stat Display Mapping
 const displays = {
@@ -137,11 +138,11 @@ function renderGallery() {
             <div class="image-wrapper">
                 <img src="${photo.src}" alt="${photo.caption}">
                 <div class="curved-overlay ${isBottom ? 'bottom' : ''}">
-                    <svg viewBox="0 0 250 50">
-                        <path id="curve-${idx}" d="M 10,40 Q 125,10 240,40" fill="transparent" />
+                    <svg viewBox="0 0 250 80">
+                        <path id="curve-${idx}" d="M 10,60 Q 125,10 240,60" fill="transparent" />
                         <text>
-                            <textPath xlink:href="#curve-${idx}" startOffset="50%" text-anchor="middle">
-                                ${photo.caption}
+                            <textPath href="#curve-${idx}" startOffset="50%" text-anchor="middle">
+                                MOOD // ${photo.caption}
                             </textPath>
                         </text>
                     </svg>
@@ -189,22 +190,31 @@ function openLightbox(idx) {
     document.body.style.overflow = 'hidden';
 }
 
-let zoomLevel = 1;
 if (lightboxImg) {
+    const updateZoom = (e) => {
+        const rect = lightboxImg.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        lightboxImg.style.transformOrigin = `${x}% ${y}%`;
+    };
+
     lightboxImg.onclick = (e) => {
         e.stopPropagation();
         if (zoomLevel === 1) {
-            zoomLevel = 3.0; 
-            const rect = lightboxImg.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            lightboxImg.style.transformOrigin = `${x}% ${y}%`;
+            zoomLevel = 2.5; // Premium zoom level
+            updateZoom(e);
             lightboxImg.style.transform = `scale(${zoomLevel})`;
             lightboxImg.classList.add('zoomed');
         } else {
             zoomLevel = 1;
             lightboxImg.style.transform = 'scale(1)';
             lightboxImg.classList.remove('zoomed');
+        }
+    };
+
+    lightboxImg.onmousemove = (e) => {
+        if (zoomLevel > 1) {
+            updateZoom(e);
         }
     };
 }
