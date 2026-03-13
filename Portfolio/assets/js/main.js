@@ -74,45 +74,45 @@ const inputs = {
     dress: document.getElementById('statDress')
 };
 
-// 3. Image Discovery
+// 3. Optimized Image Discovery (Parallel Protocol)
 async function discoverImages() {
     const discovered = [];
     const extensions = ['jpeg', 'png', 'jpg'];
+    const maxConcurrent = 10; // Check 10 indices at once
     let i = 1;
-    let misses = 0;
+    let stopDiscovery = false;
 
-    while (misses < 3 && i < 100) {
-        let found = false;
-        for (const ext of extensions) {
-            const url = `assets/images/Img${i}.${ext}`;
-            const exists = await new Promise(res => {
-                const img = new Image();
-                img.onload = () => res(true);
-                img.onerror = () => res(false);
-                img.src = url;
-            });
-
-            if (exists) {
-                discovered.push({ src: url, caption: `Img${i}`, ext: ext });
-                found = true;
-                break;
-            }
-        }
-        
-        const urlA = `assets/images/Img${i}a.png`; 
-        const existsA = await new Promise(res => {
+    const checkImage = (url, caption, ext) => {
+        return new Promise(res => {
             const img = new Image();
-            img.onload = () => res(true);
-            img.onerror = () => res(false);
-            img.src = urlA;
+            img.onload = () => res({ src: url, caption, ext });
+            img.onerror = () => res(null);
+            img.src = url;
         });
-        if (existsA) {
-            discovered.push({ src: urlA, caption: `Img${i}a`, ext: 'png' });
-            found = true;
+    };
+
+    while (!stopDiscovery && i < 100) {
+        const batch = [];
+        for (let j = 0; j < maxConcurrent; j++) {
+            const idx = i + j;
+            // Check main extensions in parallel
+            extensions.forEach(ext => {
+                batch.push(checkImage(`assets/images/Img${idx}.${ext}`, `Img${idx}`, ext));
+            });
+            // Check alt versions (Img1a.png)
+            batch.push(checkImage(`assets/images/Img${idx}a.png`, `Img${idx}a`, 'png'));
         }
 
-        if (found) misses = 0; else misses++;
-        i++;
+        const results = await Promise.all(batch);
+        const foundInBatch = results.filter(r => r !== null);
+        
+        if (foundInBatch.length > 0) {
+            discovered.push(...foundInBatch);
+        } else {
+            // If an entire batch of 10 indices is empty, we've likely hit the end
+            stopDiscovery = true;
+        }
+        i += maxConcurrent;
     }
     return discovered;
 }
@@ -136,7 +136,7 @@ function renderGallery() {
         const isBottom = idx % 2 === 0;
         item.innerHTML = `
             <div class="image-wrapper">
-                <img src="${photo.src}" alt="${photo.caption}">
+                <img src="${photo.src}" alt="${photo.caption}" loading="lazy">
                 <div class="curved-overlay ${isBottom ? 'bottom' : ''}">
                     <svg viewBox="0 0 250 80">
                         <path id="curve-${idx}" d="M 10,60 Q 125,10 240,60" fill="transparent" />
