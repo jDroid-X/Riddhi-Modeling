@@ -20,7 +20,16 @@ const adminToolbar = document.getElementById('adminToolbar');
 const exitAdmin = document.getElementById('exitAdmin');
 const uploadBtn = document.getElementById('uploadBtn');
 const editAboutBtn = document.getElementById('editAboutBtn');
+const gitConfigBtn = document.getElementById('gitConfigBtn');
 const fileInput = document.getElementById('fileInput');
+
+// Git Auth UI Elements
+const gitAuthModal = document.getElementById('gitAuthModal');
+const githubUsernameInput = document.getElementById('githubUsername');
+const githubRepoInput = document.getElementById('githubRepo');
+const githubTokenInput = document.getElementById('githubToken');
+const saveGitConfig = document.getElementById('saveGitConfig');
+const cancelGitConfig = document.getElementById('cancelGitConfig');
 
 // About Edit UI Elements
 const aboutModal = document.getElementById('aboutModal');
@@ -229,6 +238,32 @@ if (exitAdmin) {
     };
 }
 
+// Git Config Logic
+if (gitConfigBtn) {
+    gitConfigBtn.onclick = () => {
+        const config = JSON.parse(localStorage.getItem('git_config')) || {};
+        githubUsernameInput.value = config.username || '';
+        githubRepoInput.value = config.repo || '';
+        githubTokenInput.value = config.token || '';
+        gitAuthModal.style.display = 'flex';
+    };
+}
+
+if (saveGitConfig) {
+    saveGitConfig.onclick = () => {
+        const config = {
+            username: githubUsernameInput.value,
+            repo: githubRepoInput.value,
+            token: githubTokenInput.value
+        };
+        localStorage.setItem('git_config', JSON.stringify(config));
+        gitAuthModal.style.display = 'none';
+        alert('Git Configuration Saved Locally.');
+    };
+}
+
+if (cancelGitConfig) cancelGitConfig.onclick = () => gitAuthModal.style.display = 'none';
+
 
 if (uploadBtn) {
     uploadBtn.onclick = () => fileInput.click();
@@ -236,6 +271,14 @@ if (uploadBtn) {
 
 if (fileInput) {
     fileInput.onchange = async (e) => {
+        const config = JSON.parse(localStorage.getItem('git_config'));
+        if (!config || !config.token) {
+            alert('Please configure Git Settings first (Username, Repo, and Token).');
+            gitAuthModal.style.display = 'flex';
+            e.target.value = '';
+            return;
+        }
+
         const files = Array.from(e.target.files);
         if (!files.length) return;
 
@@ -245,33 +288,21 @@ if (fileInput) {
         const syncTimer = document.getElementById('syncTimer');
 
         uploadModal.style.display = 'flex';
-
-        // Calculate simulated sync time based on total file size
-        // Standard Protocol: ~5 seconds base + 2s per MB
         let totalSizeMB = files.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024);
         let countdown = Math.max(5, Math.round(totalSizeMB * 2 + 5));
-        
         syncTimer.textContent = countdown;
         progressBar.style.width = '0%';
-        statusText.textContent = `Establishing Git Handshake... (${files.length} files detected)`;
+        statusText.textContent = `Authenticating Git Protocol...`;
 
-        const timerInterval = setInterval(() => {
+        const timerInterval = setInterval(async () => {
             countdown--;
             syncTimer.textContent = countdown;
-            
-            // Progress bar mapping
-            let progress = ((Math.max(0, countdown) / countdown) * 100);
             progressBar.style.width = `${100 - (countdown / (totalSizeMB * 2 + 5)) * 100}%`;
 
             if (countdown <= 0) {
                 clearInterval(timerInterval);
-                uploadModal.style.display = 'none';
+                statusText.textContent = "Initiating Secure Transfer...";
                 
-                // POP UP ERROR LOG MSG as per protocol
-                const protocolError = `[GIT_SYNC_ERROR]: Handshake Timeout\n\nDiagnostic: The browser was unable to write the physical files to the local repository.\n\nReason: Standard Browser Security Sandbox prohibits direct disk writes.\n\nTo resolve, follow the Manual Protocol in sync_audit_log.md.`;
-                alert(protocolError);
-                
-                // Add to preview anyway for user satisfaction
                 const findMaxNum = () => {
                     let max = 0;
                     photos.forEach(p => {
@@ -285,17 +316,54 @@ if (fileInput) {
                 };
 
                 let startNum = findMaxNum() + 1;
-                files.forEach((file, i) => {
+                let successCount = 0;
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
                     const ext = file.name.split('.').pop();
                     const nextName = `Img${startNum + i}`;
-                    const previewUrl = URL.createObjectURL(file);
-                    photos.push({ src: previewUrl, caption: nextName, ext: ext });
-                });
-                renderGallery();
+                    const fullFileName = `${nextName}.${ext}`;
+                    
+                    try {
+                        const base64 = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result.split(',')[1]);
+                            reader.readAsDataURL(file);
+                        });
+
+                        const response = await fetch(`https://api.github.com/repos/${config.username}/${config.repo}/contents/Portfolio/assets/images/${fullFileName}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${config.token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: `Standard Protocol: Upload ${fullFileName}`,
+                                content: base64
+                            })
+                        });
+
+                        if (response.ok) {
+                            successCount++;
+                            photos.push({ src: `assets/images/${fullFileName}`, caption: nextName, ext: ext });
+                        } else {
+                            const err = await response.json();
+                            throw new Error(err.message || 'GitHub API Error');
+                        }
+                    } catch (err) {
+                        alert(`Git Protocol Failed for ${file.name}: ${err.message}`);
+                    }
+                }
+
+                uploadModal.style.display = 'none';
+                if (successCount > 0) {
+                    renderGallery();
+                    alert(`Standard Protocol Complete: ${successCount} files synced to GitHub!`);
+                }
             }
         }, 1000);
 
-        e.target.value = ''; // Reset input
+        e.target.value = '';
     };
 }
 

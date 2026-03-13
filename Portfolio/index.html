@@ -155,7 +155,29 @@
             <div class="toolbar-actions">
                 <button id="editAboutBtn">Edit About</button>
                 <button id="uploadBtn">Upload Photo</button>
+                <button id="gitConfigBtn">Git Settings</button>
                 <button id="exitAdmin">Exit Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GitHub Authentication Modal -->
+    <div id="gitAuthModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <h3>Git Credentials</h3>
+            <p>Enter your GitHub details to enable live syncing.</p>
+            <div class="admin-form">
+                <input type="text" id="githubUsername" placeholder="GitHub Username">
+                <input type="text" id="githubRepo" placeholder="Repository Name (Riddhi-Modeling)">
+                <input type="password" id="githubToken" placeholder="Personal Access Token (ghp_...)">
+                <p style="font-size: 0.7rem; color: #888; margin-top: -1rem; margin-bottom: 1.5rem;">
+                    * Token stays in your browser's private storage. 
+                    <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--accent-color);">Get Token Here</a>
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelGitConfig">Cancel</button>
+                <button id="saveGitConfig">Save Config</button>
             </div>
         </div>
     </div>
