@@ -78,7 +78,7 @@ const inputs = {
 async function discoverImages() {
     const discovered = [];
     const extensions = ['jpeg', 'png', 'jpg'];
-    const maxConcurrent = 10; // Check 10 indices at once
+    const maxConcurrent = 5; // Mobile-friendly parallel discovery
     let i = 1;
     let stopDiscovery = false;
 
