@@ -718,6 +718,35 @@ nav a:hover { color: var(--accent-color); }
 
 body.admin-mode .delete-photo-btn { display: flex; align-items: center; justify-content: center; }
 
+/* Sync Instruction Modal Styling */
+.sync-instructions {
+    text-align: left;
+    background: #000;
+    padding: 1.5rem;
+    border: 1px solid #333;
+    margin: 1.5rem 0;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.sync-step-title {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.sync-step-content {
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.sync-command-box {
+    color: #fff;
+    background: #111;
+    padding: 0.5rem;
+    word-break: break-all;
+}
+
 @media (max-width: 768px) {
     .nav-container {
         flex-direction: column;

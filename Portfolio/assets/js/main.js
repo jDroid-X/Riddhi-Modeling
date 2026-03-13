@@ -158,7 +158,12 @@ function renderGallery() {
 
 function deletePhoto(event, name) {
     event.stopPropagation();
-    alert(`To remove ${name} permanently, delete the file from your 'assets/images' folder and push to GitHub.`);
+    const confirmed = confirm(`Remove "${name}" from preview? \n(Note: This will not delete the file from your computer or GitHub)`);
+    if (confirmed) {
+        photos = photos.filter(p => p.caption !== name);
+        renderGallery();
+        alert(`Photo removed from view. To delete permanently, remove the file from 'assets/images' and push to GitHub.`);
+    }
 }
 
 // 4. Lightbox & Zoom
@@ -203,6 +208,8 @@ if (closeLightboxBtn) {
 
 // 5. Admin Navigation
 if (adminBtn) adminBtn.onclick = () => adminModal.style.display = 'flex';
+// 5. Admin Navigation
+if (adminBtn) adminBtn.onclick = () => adminModal.style.display = 'flex';
 if (submitAdmin) {
     submitAdmin.onclick = () => {
         // Obfuscated password check (cHVzdTEyMzQ= is base64 for pusu1234)
@@ -222,9 +229,50 @@ if (exitAdmin) {
     };
 }
 
+
 if (uploadBtn) {
-    uploadBtn.onclick = () => {
-        alert("To add new photos: \n1. Add the photo to 'assets/images' folder.\n2. Name it Img[Number] (e.g., Img4.jpg).\n3. Push the changes to GitHub.\nThe site will automatically discover and display the new photo!");
+    uploadBtn.onclick = () => fileInput.click();
+}
+
+if (fileInput) {
+    fileInput.onchange = async (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        const findMaxNum = () => {
+            let max = 0;
+            photos.forEach(p => {
+                const match = p.caption.match(/Img(\d+)/i);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    if (num > max) max = num;
+                }
+            });
+            return max;
+        };
+
+        let startNum = findMaxNum() + 1;
+        let lastExt = "";
+
+        files.forEach((file, i) => {
+            const ext = file.name.split('.').pop();
+            const nextName = `Img${startNum + i}`;
+            lastExt = ext;
+            const previewUrl = URL.createObjectURL(file);
+            photos.push({ src: previewUrl, caption: nextName, ext: ext });
+        });
+
+        renderGallery();
+        
+        // Show Instruction Modal
+        const modal = document.getElementById('uploadInstructionModal');
+        const renameCmd = document.getElementById('renameCommand');
+        if (modal && renameCmd) {
+            renameCmd.textContent = `Rename file(s) to: Img${startNum}.${lastExt} ${files.length > 1 ? '(and so on)' : ''}`;
+            modal.style.display = 'flex';
+        }
+        
+        e.target.value = ''; // Reset
     };
 }
 

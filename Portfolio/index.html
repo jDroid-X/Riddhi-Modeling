@@ -216,9 +216,28 @@
         </div>
     </div>
 
-    <!-- Hidden Context Menus / Admin Utilities -->
-    <div style="display:none;">
-        <!-- Cleaned up dormant elements -->
+    <!-- Hidden File Input for Preview -->
+    <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+
+    <!-- Premium Upload Instruction Modal -->
+    <div id="uploadInstructionModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <h3>Ready to Sync?</h3>
+            <p id="instructionText">Your photos have been added to the preview gallery.</p>
+            <div class="sync-instructions">
+                <div class="sync-step-title"># STEP 1: Rename your file</div>
+                <div id="renameCommand" class="sync-step-content">Rename to: ImgX.ext</div>
+                
+                <div class="sync-step-title"># STEP 2: Move to folder</div>
+                <div class="sync-step-content">Move file to: /assets/images/</div>
+
+                <div class="sync-step-title"># STEP 3: Push to GitHub</div>
+                <div id="gitCommand" class="sync-command-box">git add .; git commit -m "Add new photo"; git push</div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="document.getElementById('uploadInstructionModal').style.display='none'">Got it!</button>
+            </div>
+        </div>
     </div>
 
     <script src="assets/js/main.js"></script>
