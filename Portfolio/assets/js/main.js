@@ -28,6 +28,9 @@ const gitAuthModal = document.getElementById('gitAuthModal');
 const githubUsernameInput = document.getElementById('githubUsername');
 const githubRepoInput = document.getElementById('githubRepo');
 const githubTokenInput = document.getElementById('githubToken');
+const githubPathInput = document.getElementById('githubPath');
+const checkGitToken = document.getElementById('checkGitToken');
+const tokenStatus = document.getElementById('tokenStatus');
 const saveGitConfig = document.getElementById('saveGitConfig');
 const cancelGitConfig = document.getElementById('cancelGitConfig');
 
@@ -245,7 +248,52 @@ if (gitConfigBtn) {
         githubUsernameInput.value = config.username || '';
         githubRepoInput.value = config.repo || '';
         githubTokenInput.value = config.token || '';
+        githubPathInput.value = config.path || 'Portfolio/assets/images';
+        saveGitConfig.disabled = true;
+        tokenStatus.textContent = '';
         gitAuthModal.style.display = 'flex';
+    };
+}
+
+if (checkGitToken) {
+    checkGitToken.onclick = async () => {
+        const token = githubTokenInput.value;
+        const username = githubUsernameInput.value;
+        const repo = githubRepoInput.value;
+
+        if (!token || !username || !repo) {
+            tokenStatus.textContent = 'Please fill Username, Repo, and Token first.';
+            tokenStatus.style.color = '#ff4d4d';
+            return;
+        }
+
+        tokenStatus.textContent = 'Verifying protocol permissions...';
+        tokenStatus.style.color = 'var(--accent-color)';
+
+        try {
+            const response = await fetch(`https://api.github.com/repos/${username}/${repo}`, {
+                headers: { 'Authorization': `token ${token}` }
+            });
+
+            if (response.ok) {
+                const scopes = response.headers.get('X-OAuth-Scopes') || '';
+                if (scopes.includes('repo')) {
+                    tokenStatus.textContent = '✅ Git Handshake Successful. "repo" permission verified.';
+                    tokenStatus.style.color = '#28a745';
+                    saveGitConfig.disabled = false;
+                } else {
+                    tokenStatus.textContent = '❌ Error: Token missing "repo" scope.';
+                    tokenStatus.style.color = '#ff4d4d';
+                }
+            } else {
+                const err = await response.json();
+                tokenStatus.textContent = `❌ Error: ${err.message || 'Invalid Credentials'}`;
+                tokenStatus.style.color = '#ff4d4d';
+            }
+        } catch (err) {
+            tokenStatus.textContent = '❌ Protocol Error: Connection failed.';
+            tokenStatus.style.color = '#ff4d4d';
+        }
     };
 }
 
@@ -254,7 +302,8 @@ if (saveGitConfig) {
         const config = {
             username: githubUsernameInput.value,
             repo: githubRepoInput.value,
-            token: githubTokenInput.value
+            token: githubTokenInput.value,
+            path: githubPathInput.value || 'Portfolio/assets/images'
         };
         localStorage.setItem('git_config', JSON.stringify(config));
         gitAuthModal.style.display = 'none';
@@ -331,7 +380,7 @@ if (fileInput) {
                             reader.readAsDataURL(file);
                         });
 
-                        const response = await fetch(`https://api.github.com/repos/${config.username}/${config.repo}/contents/Portfolio/assets/images/${fullFileName}`, {
+                        const response = await fetch(`https://api.github.com/repos/${config.username}/${config.repo}/contents/${config.path}/${fullFileName}`, {
                             method: 'PUT',
                             headers: {
                                 'Authorization': `token ${config.token}`,

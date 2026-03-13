@@ -169,15 +169,22 @@
             <div class="admin-form">
                 <input type="text" id="githubUsername" placeholder="GitHub Username">
                 <input type="text" id="githubRepo" placeholder="Repository Name (Riddhi-Modeling)">
-                <input type="password" id="githubToken" placeholder="Personal Access Token (ghp_...)">
-                <p style="font-size: 0.7rem; color: #888; margin-top: -1rem; margin-bottom: 1.5rem;">
+                <div class="token-input-group">
+                    <input type="password" id="githubToken" placeholder="Personal Access Token (ghp_...)">
+                    <button id="checkGitToken">Check</button>
+                </div>
+                <div id="tokenStatus"></div>
+
+                <input type="text" id="githubPath" placeholder="Default Path (e.g. Portfolio/assets/images)">
+                
+                <p class="modal-hint">
                     * Token stays in your browser's private storage. 
-                    <a href="https://github.com/settings/tokens" target="_blank" rel="noopener" style="color: var(--accent-color);">Get Token Here</a>
+                    <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">Get Token Here</a>
                 </p>
             </div>
             <div class="modal-actions">
                 <button id="cancelGitConfig">Cancel</button>
-                <button id="saveGitConfig">Save Config</button>
+                <button id="saveGitConfig" disabled>Save Config</button>
             </div>
         </div>
     </div>

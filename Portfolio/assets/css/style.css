@@ -747,6 +747,42 @@ body.admin-mode .delete-photo-btn { display: flex; align-items: center; justify-
     word-break: break-all;
 }
 
+/* Git Config Styles */
+.token-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.token-input-group input {
+    margin-bottom: 0 !important;
+}
+
+#tokenStatus {
+    font-size: 0.75rem;
+    margin-bottom: 1.5rem;
+    min-height: 1rem;
+    font-family: monospace;
+}
+
+.modal-hint {
+    font-size: 0.7rem;
+    color: #888;
+    margin-top: -1rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-hint a {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
 @media (max-width: 768px) {
     .nav-container {
         flex-direction: column;
