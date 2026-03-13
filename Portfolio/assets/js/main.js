@@ -197,21 +197,34 @@ fileInput.onchange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
+    // Helper to find absolute max number in gallery
+    const findMaxNum = () => {
+        let max = 0;
+        photos.forEach(p => {
+            const match = p.caption.match(/Img(\d+)/i);
+            if (match) {
+                const num = parseInt(match[1]);
+                if (num > max) max = num;
+            }
+        });
+        return max;
+    };
+
+    let startNum = findMaxNum() + 1;
     alert("Photo has been requested to upload");
 
-    for (let file of files) {
-        const nextName = `Img${photos.length + 1}`;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const nextName = `Img${startNum + i}`;
         const ext = file.name.split('.').pop();
         
-        console.log(`Uploading in process: ${file.name}...`);
+        console.log(`Processing: ${nextName}.${ext}...`);
 
-        // Use FileReader to trigger Download
         const reader = new FileReader();
         reader.onload = (event) => {
             const blob = new Blob([event.target.result], { type: file.type });
             const url = window.URL.createObjectURL(blob);
             
-            // Trigger browser's Download manager
             const a = document.createElement('a');
             a.href = url;
             a.download = `${nextName}.${ext}`;
@@ -220,14 +233,13 @@ fileInput.onchange = async (e) => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
 
-            // Update UI
             photos.push({ src: event.target.result, caption: nextName, ext: ext });
             renderGallery();
         };
         reader.readAsDataURL(file);
     }
 
-    alert("Photo uploaded! Please save the downloaded file into your 'assets/images' folder.");
+    alert(`Photo uploaded! \n\nIMPORTANT: Please save this file to your laptop at:\nC:\\Users\\dell\\jAnitGravity\\Modeling\\portfolio\\Portfolio\\assets\\images`);
     e.target.value = '';
 };
 
