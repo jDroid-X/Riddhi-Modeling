@@ -158,7 +158,7 @@ function renderGallery() {
 
 function deletePhoto(event, name) {
     event.stopPropagation();
-    alert(`To remove ${name} permanently, delete it from the folder on your laptop.`);
+    alert(`To remove ${name} permanently, delete the file from your 'assets/images' folder and push to GitHub.`);
 }
 
 // 4. Lightbox & Zoom
@@ -201,7 +201,7 @@ if (closeLightboxBtn) {
     };
 }
 
-// 5. Admin & Upload Logic
+// 5. Admin Navigation
 if (adminBtn) adminBtn.onclick = () => adminModal.style.display = 'flex';
 if (submitAdmin) {
     submitAdmin.onclick = () => {
@@ -223,68 +223,10 @@ if (exitAdmin) {
 }
 
 if (uploadBtn) {
-    uploadBtn.onclick = () => fileInput.click();
-}
-
-fileInput.onchange = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-
-    alert("Photo has been requested to upload");
-
-    const findMaxNum = () => {
-        let max = 0;
-        photos.forEach(p => {
-            const match = p.caption.match(/Img(\d+)/i);
-            if (match) {
-                const num = parseInt(match[1]);
-                if (num > max) max = num;
-            }
-        });
-        return max;
+    uploadBtn.onclick = () => {
+        alert("To add new photos: \n1. Add the photo to 'assets/images' folder.\n2. Name it Img[Number] (e.g., Img4.jpg).\n3. Push the changes to GitHub.\nThe site will automatically discover and display the new photo!");
     };
-
-    let startNum = findMaxNum() + 1;
-    const uploadStatus = document.getElementById('uploadStatus');
-    if (document.getElementById('uploadModal')) document.getElementById('uploadModal').style.display = 'flex';
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const nextName = `Img${startNum + i}`;
-        const ext = file.name.split('.').pop();
-        const fullFileName = `${nextName}.${ext}`;
-
-        if (uploadStatus) uploadStatus.textContent = `Uploading in process: ${fullFileName}...`;
-
-        try {
-            // Send directly to local server
-            const response = await fetch('http://localhost:3000/upload', {
-                method: 'POST',
-                headers: { 'X-File-Name': fullFileName },
-                body: file
-            }).catch(() => null);
-
-            if (response && response.ok) {
-                // Success! Show in gallery
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    photos.push({ src: `assets/images/${fullFileName}`, caption: nextName, ext: ext });
-                    renderGallery();
-                };
-                reader.readAsDataURL(file);
-            } else {
-                alert("Please run the 'Start.bat' on your laptop to save the photo to your folder.");
-                break;
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    if (document.getElementById('uploadModal')) document.getElementById('uploadModal').style.display = 'none';
-    alert("Photo uploaded!");
-    e.target.value = '';
-};
+}
 
 // 6. About Edit Logic
 function loadAboutContent() {
