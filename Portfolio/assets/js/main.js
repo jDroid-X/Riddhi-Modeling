@@ -159,8 +159,23 @@ fileInput.onchange = async (e) => {
 async function init() {
     photos = await discoverImages();
     renderGallery();
+    
+    // Set random hero
     if (photos.length > 0) {
-        document.querySelector('.hero-bg-image').src = photos[Math.floor(Math.random() * photos.length)].src;
+        const heroImg = document.querySelector('.hero-bg-image');
+        if (heroImg) {
+            const randomPhoto = photos[Math.floor(Math.random() * photos.length)];
+            heroImg.src = randomPhoto.src;
+            
+            // Trigger fade-in after load
+            if (heroImg.complete) {
+                heroImg.style.opacity = '1';
+            } else {
+                heroImg.onload = () => {
+                    heroImg.style.opacity = '1';
+                };
+            }
+        }
     }
 }
 
