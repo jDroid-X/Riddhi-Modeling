@@ -11,7 +11,6 @@ document.addEventListener('mousemove', (e) => {
 const galleryContainer = document.querySelector('.gallery');
 let photos = [];
 
-// Simple Discovery: Load images Img1, Img2... until failure
 async function discoverImages() {
     const discovered = [];
     const extensions = ['jpeg', 'png', 'jpg'];
@@ -30,14 +29,14 @@ async function discoverImages() {
             });
 
             if (exists) {
-                discovered.push({ src: url, caption: `Img${i}` });
+                discovered.push({ src: url, caption: `Img${i}`, ext: ext });
                 found = true;
                 break;
             }
         }
         
-        // Also check for "a" variants (Img1a, etc)
-        const urlA = `assets/images/Img${i}a.png`; // Check common extra files
+        // Check "a" variants
+        const urlA = `assets/images/Img${i}a.png`;
         const existsA = await new Promise(res => {
             const img = new Image();
             img.onload = () => res(true);
@@ -45,7 +44,7 @@ async function discoverImages() {
             img.src = urlA;
         });
         if (existsA) {
-            discovered.push({ src: urlA, caption: `Img${i}a` });
+            discovered.push({ src: urlA, caption: `Img${i}a`, ext: 'png' });
             found = true;
         }
 
@@ -66,93 +65,47 @@ function renderGallery() {
                 <div class="curved-overlay"><span>${photo.caption}</span></div>
             </div>
         `;
-        item.onclick = (e) => {
-            e.preventDefault();
-            openLightbox(idx);
-        };
+        item.onclick = () => openLightbox(idx);
         galleryContainer.appendChild(item);
     });
 }
 
-// Lightbox Advanced
+// Lightbox
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
-const caption = document.getElementById('lightbox-caption');
-let currentIdx = 0;
-
 function openLightbox(idx) {
-    currentIdx = idx;
     lightboxImg.src = photos[idx].src;
-    lightboxImg.classList.remove('zoomed');
     lightboxImg.style.transform = 'scale(1)';
-    if (caption) caption.textContent = photos[idx].caption;
     lightbox.style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-// Intense Zoom Logic (200% - 300%)
-let zoomLevel = 1;
 lightboxImg.onclick = (e) => {
     e.stopPropagation();
-    if (zoomLevel === 1) {
-        zoomLevel = 2.5; // High zoom
+    const isZoomed = lightboxImg.style.transform === 'scale(2.5)';
+    if (!isZoomed) {
         const rect = lightboxImg.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
         lightboxImg.style.transformOrigin = `${x}% ${y}%`;
-        lightboxImg.style.transform = `scale(${zoomLevel})`;
-        lightboxImg.classList.add('zoomed');
+        lightboxImg.style.transform = 'scale(2.5)';
     } else {
-        zoomLevel = 1;
         lightboxImg.style.transform = 'scale(1)';
-        lightboxImg.classList.remove('zoomed');
     }
 };
 
 document.querySelector('.close-lightbox').onclick = () => {
     lightbox.style.display = 'none';
     document.body.style.overflow = 'auto';
-    zoomLevel = 1;
 };
 
-// Navigation
-document.querySelector('.next').onclick = (e) => {
-    e.stopPropagation();
-    currentIdx = (currentIdx + 1) % photos.length;
-    openLightbox(currentIdx);
-};
-
-document.querySelector('.prev').onclick = (e) => {
-    e.stopPropagation();
-    currentIdx = (currentIdx - 1 + photos.length) % photos.length;
-    openLightbox(currentIdx);
-};
-
-document.addEventListener('keydown', (e) => {
-    if (lightbox.style.display === 'block') {
-        if (e.key === 'ArrowRight') document.querySelector('.next').click();
-        if (e.key === 'ArrowLeft') document.querySelector('.prev').click();
-        if (e.key === 'Escape') document.querySelector('.close-lightbox').click();
-    }
-});
-
-// Initialization
-async function init() {
-    photos = await discoverImages();
-    renderGallery();
-    
-    // Set random hero
-    if (photos.length > 0) {
-        document.querySelector('.hero-bg-image').src = photos[Math.floor(Math.random() * photos.length)].src;
-    }
-}
-
-// Admin / Upload logic
+// Admin / Upload Logic
 const adminBtn = document.getElementById('adminBtn');
 const adminModal = document.getElementById('adminModal');
 const adminPasswordInput = document.getElementById('adminPassword');
 const submitAdmin = document.getElementById('submitAdmin');
 const adminToolbar = document.getElementById('adminToolbar');
+const fileInput = document.getElementById('fileInput');
 
 adminBtn.onclick = () => adminModal.style.display = 'flex';
 submitAdmin.onclick = () => {
@@ -162,8 +115,53 @@ submitAdmin.onclick = () => {
     } else alert('Incorrect Password');
 };
 
-document.getElementById('uploadBtn').onclick = () => {
-    alert("To add photos, please run the 'Sync_Photos.bat' file in your Portfolio folder.\n\nIt will guide you to pick photos and sync them to your laptop and GitHub automatically.");
+document.getElementById('uploadBtn').onclick = () => fileInput.click();
+
+fileInput.onchange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    alert("Photo has been requested to upload");
+
+    for (let file of files) {
+        const nextName = `Img${photos.length + 1}`;
+        const ext = file.name.split('.').pop();
+        
+        console.log(`Uploading in process: ${file.name}...`);
+
+        // Use FileReader to trigger Download
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const blob = new Blob([event.target.result], { type: file.type });
+            const url = window.URL.createObjectURL(blob);
+            
+            // Trigger browser's Download manager
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${nextName}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            // Update UI
+            photos.push({ src: event.target.result, caption: nextName, ext: ext });
+            renderGallery();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    alert("Photo uploaded! Please save the downloaded file into your 'assets/images' folder.");
+    e.target.value = '';
 };
+
+// Initialization
+async function init() {
+    photos = await discoverImages();
+    renderGallery();
+    if (photos.length > 0) {
+        document.querySelector('.hero-bg-image').src = photos[Math.floor(Math.random() * photos.length)].src;
+    }
+}
 
 init();
