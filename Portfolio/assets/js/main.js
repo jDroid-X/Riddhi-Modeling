@@ -239,40 +239,63 @@ if (fileInput) {
         const files = Array.from(e.target.files);
         if (!files.length) return;
 
-        const findMaxNum = () => {
-            let max = 0;
-            photos.forEach(p => {
-                const match = p.caption.match(/Img(\d+)/i);
-                if (match) {
-                    const num = parseInt(match[1]);
-                    if (num > max) max = num;
-                }
-            });
-            return max;
-        };
+        const uploadModal = document.getElementById('uploadModal');
+        const progressBar = document.getElementById('uploadProgressBar');
+        const statusText = document.getElementById('uploadStatus');
+        const syncTimer = document.getElementById('syncTimer');
 
-        let startNum = findMaxNum() + 1;
-        let lastExt = "";
+        uploadModal.style.display = 'flex';
 
-        files.forEach((file, i) => {
-            const ext = file.name.split('.').pop();
-            const nextName = `Img${startNum + i}`;
-            lastExt = ext;
-            const previewUrl = URL.createObjectURL(file);
-            photos.push({ src: previewUrl, caption: nextName, ext: ext });
-        });
-
-        renderGallery();
+        // Calculate simulated sync time based on total file size
+        // Standard Protocol: ~5 seconds base + 2s per MB
+        let totalSizeMB = files.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024);
+        let countdown = Math.max(5, Math.round(totalSizeMB * 2 + 5));
         
-        // Show Instruction Modal
-        const modal = document.getElementById('uploadInstructionModal');
-        const renameCmd = document.getElementById('renameCommand');
-        if (modal && renameCmd) {
-            renameCmd.textContent = `Rename file(s) to: Img${startNum}.${lastExt} ${files.length > 1 ? '(and so on)' : ''}`;
-            modal.style.display = 'flex';
-        }
-        
-        e.target.value = ''; // Reset
+        syncTimer.textContent = countdown;
+        progressBar.style.width = '0%';
+        statusText.textContent = `Establishing Git Handshake... (${files.length} files detected)`;
+
+        const timerInterval = setInterval(() => {
+            countdown--;
+            syncTimer.textContent = countdown;
+            
+            // Progress bar mapping
+            let progress = ((Math.max(0, countdown) / countdown) * 100);
+            progressBar.style.width = `${100 - (countdown / (totalSizeMB * 2 + 5)) * 100}%`;
+
+            if (countdown <= 0) {
+                clearInterval(timerInterval);
+                uploadModal.style.display = 'none';
+                
+                // POP UP ERROR LOG MSG as per protocol
+                const protocolError = `[GIT_SYNC_ERROR]: Handshake Timeout\n\nDiagnostic: The browser was unable to write the physical files to the local repository.\n\nReason: Standard Browser Security Sandbox prohibits direct disk writes.\n\nTo resolve, follow the Manual Protocol in sync_audit_log.md.`;
+                alert(protocolError);
+                
+                // Add to preview anyway for user satisfaction
+                const findMaxNum = () => {
+                    let max = 0;
+                    photos.forEach(p => {
+                        const match = p.caption.match(/Img(\d+)/i);
+                        if (match) {
+                            const num = parseInt(match[1]);
+                            if (num > max) max = num;
+                        }
+                    });
+                    return max;
+                };
+
+                let startNum = findMaxNum() + 1;
+                files.forEach((file, i) => {
+                    const ext = file.name.split('.').pop();
+                    const nextName = `Img${startNum + i}`;
+                    const previewUrl = URL.createObjectURL(file);
+                    photos.push({ src: previewUrl, caption: nextName, ext: ext });
+                });
+                renderGallery();
+            }
+        }, 1000);
+
+        e.target.value = ''; // Reset input
     };
 }
 

@@ -219,24 +219,18 @@
     <!-- Hidden File Input for Preview -->
     <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
 
-    <!-- Premium Upload Instruction Modal -->
-    <div id="uploadInstructionModal" class="admin-modal">
+    <!-- Upload Progress Modal (The Git Sync Protocol) -->
+    <div id="uploadModal" class="admin-modal">
         <div class="admin-modal-content">
-            <h3>Ready to Sync?</h3>
-            <p id="instructionText">Your photos have been added to the preview gallery.</p>
-            <div class="sync-instructions">
-                <div class="sync-step-title"># STEP 1: Rename your file</div>
-                <div id="renameCommand" class="sync-step-content">Rename to: ImgX.ext</div>
-                
-                <div class="sync-step-title"># STEP 2: Move to folder</div>
-                <div class="sync-step-content">Move file to: /assets/images/</div>
-
-                <div class="sync-step-title"># STEP 3: Push to GitHub</div>
-                <div id="gitCommand" class="sync-command-box">git add .; git commit -m "Add new photo"; git push</div>
+            <h3>Git Sync Protocol</h3>
+            <p id="uploadStatus">Preparing secure transfer...</p>
+            <div style="background: #000; height: 10px; width: 100%; border-radius: 5px; overflow: hidden; margin: 1.5rem 0; border: 1px solid #333;">
+                <div id="uploadProgressBar" style="height: 100%; width: 0%; background: var(--accent-color); transition: width 0.3s ease;"></div>
             </div>
-            <div class="modal-actions">
-                <button onclick="document.getElementById('uploadInstructionModal').style.display='none'">Got it!</button>
+            <div id="countdownContainer" style="font-family: monospace; color: var(--accent-color); font-size: 1.2rem; margin-bottom: 1.5rem;">
+                Estimated Sync Time: <span id="syncTimer">--</span>s
             </div>
+            <p style="font-size: 0.8rem; color: #666;">Do not close the browser during the protocol handshake.</p>
         </div>
     </div>
 
