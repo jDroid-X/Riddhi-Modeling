@@ -739,6 +739,24 @@ footer {
     border-color: var(--accent-color);
 }
 
+.toolbar-main-btn {
+    background: var(--accent-color) !important;
+    color: black !important;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.toolbar-main-btn:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 15px rgba(197, 160, 89, 0.4);
+}
+
 .delete-photo-btn {
     display: none;
     position: absolute;
