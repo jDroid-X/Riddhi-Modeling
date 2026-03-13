@@ -226,8 +226,95 @@ fileInput.onchange = async (e) => {
     e.target.value = '';
 };
 
+// About Editing Logic
+const editAboutBtn = document.getElementById('editAboutBtn');
+const aboutModal = document.getElementById('aboutModal');
+const editAboutTitle = document.getElementById('editAboutTitle');
+const editAboutBody = document.getElementById('editAboutBody');
+const saveAbout = document.getElementById('saveAbout');
+const cancelAbout = document.getElementById('cancelAbout');
+
+const aboutSectionTitle = document.querySelector('.about .section-title');
+const aboutSectionBody = document.querySelector('.about-text p');
+
+// Stat Display Elements
+const displays = {
+    height: document.getElementById('displayHeight'),
+    bust: document.getElementById('displayBust'),
+    waist: document.getElementById('displayWaist'),
+    hips: document.getElementById('displayHips'),
+    eyes: document.getElementById('displayEyes'),
+    hair: document.getElementById('displayHair'),
+    shoes: document.getElementById('displayShoes'),
+    dress: document.getElementById('displayDress')
+};
+
+// Stat Input Elements
+const inputs = {
+    height: document.getElementById('statHeight'),
+    bust: document.getElementById('statBust'),
+    waist: document.getElementById('statWaist'),
+    hips: document.getElementById('statHips'),
+    eyes: document.getElementById('statEyes'),
+    hair: document.getElementById('statHair'),
+    shoes: document.getElementById('statShoes'),
+    dress: document.getElementById('statDress')
+};
+
+function loadAboutContent() {
+    const storedAbout = JSON.parse(localStorage.getItem('portfolio_about'));
+    if (storedAbout) {
+        if (aboutSectionTitle) aboutSectionTitle.textContent = storedAbout.title || aboutSectionTitle.textContent;
+        if (aboutSectionBody) aboutSectionBody.textContent = storedAbout.body || aboutSectionBody.textContent;
+        
+        if (storedAbout.stats) {
+            Object.keys(storedAbout.stats).forEach(key => {
+                if (displays[key]) displays[key].textContent = storedAbout.stats[key];
+            });
+        }
+    }
+}
+
+if (editAboutBtn) {
+    editAboutBtn.onclick = () => {
+        editAboutTitle.value = aboutSectionTitle.textContent;
+        editAboutBody.value = aboutSectionBody.textContent;
+        Object.keys(inputs).forEach(key => {
+            if (displays[key]) inputs[key].value = displays[key].textContent;
+        });
+        aboutModal.style.display = 'flex';
+    };
+}
+
+if (cancelAbout) cancelAbout.onclick = () => aboutModal.style.display = 'none';
+
+if (saveAbout) {
+    saveAbout.onclick = () => {
+        const statsData = {};
+        Object.keys(inputs).forEach(key => {
+            statsData[key] = inputs[key].value;
+            if (displays[key]) displays[key].textContent = inputs[key].value;
+        });
+
+        const profileData = {
+            title: editAboutTitle.value,
+            body: editAboutBody.value,
+            stats: statsData
+        };
+        
+        aboutSectionTitle.textContent = profileData.title;
+        aboutSectionBody.textContent = profileData.body;
+        localStorage.setItem('portfolio_about', JSON.stringify(profileData));
+        aboutModal.style.display = 'none';
+
+        // Notify for permanent sync
+        alert("Profile updated locally on this device!\n\nTo make this change permanent for everyone online, please tell me 'Sync Profile Changes' and I will update your files and GitHub.");
+    };
+}
+
 // Initialization
 async function init() {
+    loadAboutContent();
     photos = await discoverImages();
     renderGallery();
     
@@ -237,8 +324,6 @@ async function init() {
         if (heroImg) {
             const randomPhoto = photos[Math.floor(Math.random() * photos.length)];
             heroImg.src = randomPhoto.src;
-            
-            // Trigger fade-in after load
             if (heroImg.complete) {
                 heroImg.style.opacity = '1';
             } else {
