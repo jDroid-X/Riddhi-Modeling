@@ -63,7 +63,6 @@ const inputs = {
 
 // 3. Image Discovery
 async function discoverImages() {
-    console.log("Discovering images...");
     const discovered = [];
     const extensions = ['jpeg', 'png', 'jpg'];
     let i = 1;
@@ -111,10 +110,30 @@ function renderGallery() {
     photos.forEach((photo, idx) => {
         const item = document.createElement('div');
         item.className = 'gallery-item';
+        
+        // Detect tall images
+        const img = new Image();
+        img.src = photo.src;
+        img.onload = () => {
+            if (img.height > img.width) {
+                item.classList.add('tall');
+            }
+        };
+
+        const isBottom = idx % 2 === 0;
         item.innerHTML = `
             <div class="image-wrapper">
                 <img src="${photo.src}" alt="${photo.caption}">
-                <div class="curved-overlay"><span>${photo.caption}</span></div>
+                <div class="curved-overlay ${isBottom ? 'bottom' : ''}">
+                    <svg viewBox="0 0 250 50">
+                        <path id="curve-${idx}" d="M 10,40 Q 125,10 240,40" fill="transparent" />
+                        <text>
+                            <textPath xlink:href="#curve-${idx}" startOffset="50%" text-anchor="middle">
+                                ${photo.caption}
+                            </textPath>
+                        </text>
+                    </svg>
+                </div>
                 <button class="delete-photo-btn" onclick="deletePhoto(event, '${photo.caption}')">&times;</button>
             </div>
         `;
@@ -123,12 +142,23 @@ function renderGallery() {
             openLightbox(idx);
         };
         galleryContainer.appendChild(item);
+
+        // Scroll Reveal Animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(item);
     });
 }
 
 function deletePhoto(event, name) {
     event.stopPropagation();
-    alert(`To remove ${name} permanently:\n\n1. Open your laptop folder: C:\\Users\\dell\\jAnitGravity\\Modeling\\portfolio\\Portfolio\\assets\\images\n2. Delete ${name}.\n3. Tell me to "Sync Delete" to update GitHub.`);
+    alert(`To remove ${name} permanently, delete it from the folder on your laptop.`);
 }
 
 // 4. Lightbox & Zoom
@@ -147,7 +177,7 @@ if (lightboxImg) {
     lightboxImg.onclick = (e) => {
         e.stopPropagation();
         if (zoomLevel === 1) {
-            zoomLevel = 2.5; 
+            zoomLevel = 3.0; 
             const rect = lightboxImg.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / rect.width) * 100;
             const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -171,25 +201,12 @@ if (closeLightboxBtn) {
     };
 }
 
-// Nav in Lightbox
-const nextBtn = document.querySelector('.next');
-const prevBtn = document.querySelector('.prev');
-if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); currentIdx = (currentIdx + 1) % photos.length; openLightbox(currentIdx); };
-if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); currentIdx = (currentIdx - 1 + photos.length) % photos.length; openLightbox(currentIdx); };
-
-document.addEventListener('keydown', (e) => {
-    if (lightbox.style.display === 'block') {
-        if (e.key === 'ArrowRight') nextBtn.click();
-        if (e.key === 'ArrowLeft') prevBtn.click();
-        if (e.key === 'Escape') closeLightboxBtn.click();
-    }
-});
-
 // 5. Admin & Upload Logic
 if (adminBtn) adminBtn.onclick = () => adminModal.style.display = 'flex';
 if (submitAdmin) {
     submitAdmin.onclick = () => {
-        if (adminPasswordInput.value === 'pusu1234') {
+        // Obfuscated password check (cHVzdTEyMzQ= is base64 for pusu1234)
+        if (btoa(adminPasswordInput.value) === 'cHVzdTEyMzQ=') {
             adminModal.style.display = 'none';
             adminToolbar.style.display = 'block';
             document.body.classList.add('admin-mode');
@@ -203,12 +220,8 @@ if (exitAdmin) {
     };
 }
 
-// UPLOAD ACTION
 if (uploadBtn) {
-    uploadBtn.onclick = () => {
-        console.log("Upload button clicked");
-        fileInput.click();
-    };
+    uploadBtn.onclick = () => fileInput.click();
 }
 
 fileInput.onchange = async (e) => {
@@ -230,28 +243,44 @@ fileInput.onchange = async (e) => {
     };
 
     let startNum = findMaxNum() + 1;
+    const uploadStatus = document.getElementById('uploadStatus');
+    if (document.getElementById('uploadModal')) document.getElementById('uploadModal').style.display = 'flex';
+
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const nextName = `Img${startNum + i}`;
         const ext = file.name.split('.').pop();
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const blob = new Blob([event.target.result], { type: file.type });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${nextName}.${ext}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            photos.push({ src: event.target.result, caption: nextName, ext: ext });
-            renderGallery();
-        };
-        reader.readAsDataURL(file);
+        const fullFileName = `${nextName}.${ext}`;
+
+        if (uploadStatus) uploadStatus.textContent = `Uploading in process: ${fullFileName}...`;
+
+        try {
+            // Send directly to local server
+            const response = await fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                headers: { 'X-File-Name': fullFileName },
+                body: file
+            }).catch(() => null);
+
+            if (response && response.ok) {
+                // Success! Show in gallery
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    photos.push({ src: `assets/images/${fullFileName}`, caption: nextName, ext: ext });
+                    renderGallery();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Please run the 'Start.bat' on your laptop to save the photo to your folder.");
+                break;
+            }
+        } catch (err) {
+            console.error(err);
+        }
     }
-    alert(`Photo uploaded! \n\nSave to:\nC:\\Users\\dell\\jAnitGravity\\Modeling\\portfolio\\Portfolio\\assets\\images`);
+
+    if (document.getElementById('uploadModal')) document.getElementById('uploadModal').style.display = 'none';
+    alert("Photo uploaded!");
     e.target.value = '';
 };
 
@@ -271,7 +300,6 @@ function loadAboutContent() {
 
 if (editAboutBtn) {
     editAboutBtn.onclick = () => {
-        console.log("Edit About clicked");
         editAboutTitle.value = aboutSectionTitle.textContent;
         editAboutBody.value = aboutSectionBody.textContent;
         Object.keys(inputs).forEach(key => { if (displays[key]) inputs[key].value = displays[key].textContent; });
@@ -293,29 +321,32 @@ if (saveAbout) {
         aboutSectionBody.textContent = profileData.body;
         localStorage.setItem('portfolio_about', JSON.stringify(profileData));
         aboutModal.style.display = 'none';
-        alert("Profile updated! Tell me 'Sync Profile Changes' to update GitHub permanently.");
+        alert("Profile updated! Run Sync to update online.");
     };
+}
+
+// 4. Initial Render & Gallery Logic
+async function initGallery() {
+    photos = await discoverImages();
+    
+    // Random Hero Background Logic
+    if (photos.length > 0) {
+        const heroImg = document.getElementById('heroImage');
+        if (heroImg) {
+            const randomIdx = Math.floor(Math.random() * photos.length);
+            heroImg.src = photos[randomIdx].src;
+            heroImg.onload = () => heroImg.style.opacity = '1';
+            if (heroImg.complete) heroImg.style.opacity = '1';
+        }
+    }
+
+    renderGallery();
 }
 
 // 7. Initialize Everything
 async function init() {
     loadAboutContent();
-    photos = await discoverImages();
-    renderGallery();
-    
-    // Set random hero
-    if (photos.length > 0) {
-        const heroImg = document.querySelector('.hero-bg-image');
-        if (heroImg) {
-            const randomPhoto = photos[Math.floor(Math.random() * photos.length)];
-            heroImg.src = randomPhoto.src;
-            if (heroImg.complete) {
-                heroImg.style.opacity = '1';
-            } else {
-                heroImg.onload = () => { heroImg.style.opacity = '1'; };
-            }
-        }
-    }
+    await initGallery();
 }
 
 init();
