@@ -63,41 +63,107 @@ function renderGallery() {
             <div class="image-wrapper">
                 <img src="${photo.src}" alt="${photo.caption}">
                 <div class="curved-overlay"><span>${photo.caption}</span></div>
+                <button class="delete-photo-btn" onclick="deletePhoto(event, '${photo.caption}')">&times;</button>
             </div>
         `;
-        item.onclick = () => openLightbox(idx);
+        item.onclick = (e) => {
+            e.preventDefault();
+            openLightbox(idx);
+        };
         galleryContainer.appendChild(item);
     });
 }
 
-// Lightbox
+function deletePhoto(event, name) {
+    event.stopPropagation();
+    alert(`To remove ${name} permanently:\n\n1. Open your 'assets/images' folder on your laptop.\n2. Delete the file named ${name}.\n3. Tell me to "Sync Delete" and I will remove it from GitHub too!`);
+}
+
+// Lightbox Advanced
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
+const captionDisplay = document.getElementById('lightbox-caption');
+let currentIdx = 0;
+
 function openLightbox(idx) {
+    currentIdx = idx;
     lightboxImg.src = photos[idx].src;
+    lightboxImg.classList.remove('zoomed');
     lightboxImg.style.transform = 'scale(1)';
+    if (captionDisplay) captionDisplay.textContent = photos[idx].caption;
     lightbox.style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
+// Intense Zoom Logic (200% - 300%)
+let zoomLevel = 1;
 lightboxImg.onclick = (e) => {
     e.stopPropagation();
-    const isZoomed = lightboxImg.style.transform === 'scale(2.5)';
-    if (!isZoomed) {
+    if (zoomLevel === 1) {
+        zoomLevel = 2.5; 
         const rect = lightboxImg.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
         lightboxImg.style.transformOrigin = `${x}% ${y}%`;
-        lightboxImg.style.transform = 'scale(2.5)';
+        lightboxImg.style.transform = `scale(${zoomLevel})`;
+        lightboxImg.classList.add('zoomed');
     } else {
+        zoomLevel = 1;
         lightboxImg.style.transform = 'scale(1)';
+        lightboxImg.classList.remove('zoomed');
     }
 };
 
 document.querySelector('.close-lightbox').onclick = () => {
     lightbox.style.display = 'none';
     document.body.style.overflow = 'auto';
+    zoomLevel = 1;
 };
+
+// Navigation
+document.querySelector('.next').onclick = (e) => {
+    e.stopPropagation();
+    currentIdx = (currentIdx + 1) % photos.length;
+    openLightbox(currentIdx);
+};
+
+document.querySelector('.prev').onclick = (e) => {
+    e.stopPropagation();
+    currentIdx = (currentIdx - 1 + photos.length) % photos.length;
+    openLightbox(currentIdx);
+};
+
+document.addEventListener('keydown', (e) => {
+    if (lightbox.style.display === 'block') {
+        if (e.key === 'ArrowRight') document.querySelector('.next').click();
+        if (e.key === 'ArrowLeft') document.querySelector('.prev').click();
+        if (e.key === 'Escape') document.querySelector('.close-lightbox').click();
+    }
+});
+
+// Initialization
+async function init() {
+    photos = await discoverImages();
+    renderGallery();
+    
+    // Set random hero
+    if (photos.length > 0) {
+        const heroImg = document.querySelector('.hero-bg-image');
+        if (heroImg) {
+            const randomPhoto = photos[Math.floor(Math.random() * photos.length)];
+            heroImg.src = randomPhoto.src;
+            
+            // Trigger fade-in after load
+            if (heroImg.complete) {
+                heroImg.style.opacity = '1';
+            } else {
+                heroImg.onload = () => {
+                    heroImg.style.opacity = '1';
+                };
+            }
+        }
+    }
+}
 
 // Admin / Upload Logic
 const adminBtn = document.getElementById('adminBtn');
@@ -106,16 +172,21 @@ const adminPasswordInput = document.getElementById('adminPassword');
 const submitAdmin = document.getElementById('submitAdmin');
 const adminToolbar = document.getElementById('adminToolbar');
 const fileInput = document.getElementById('fileInput');
+const exitAdmin = document.getElementById('exitAdmin');
 
 adminBtn.onclick = () => adminModal.style.display = 'flex';
 submitAdmin.onclick = () => {
     if (adminPasswordInput.value === 'pusu1234') {
         adminModal.style.display = 'none';
         adminToolbar.style.display = 'block';
+        document.body.classList.add('admin-mode');
     } else alert('Incorrect Password');
 };
 
-document.getElementById('uploadBtn').onclick = () => fileInput.click();
+exitAdmin.onclick = () => {
+    adminToolbar.style.display = 'none';
+    document.body.classList.remove('admin-mode');
+};
 
 fileInput.onchange = async (e) => {
     const files = Array.from(e.target.files);
