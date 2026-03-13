@@ -324,17 +324,15 @@ if (gitConfigBtn) {
     gitConfigBtn.onclick = () => {
         const config = JSON.parse(localStorage.getItem('git_config')) || {};
         
-        // Auto-fill testing defaults if storage is empty
+        // Auto-fill testing defaults (Force defaults if values are missing)
         githubUsernameInput.value = config.username || 'jDroid-X';
         githubRepoInput.value = config.repo || 'Riddhi-Modeling';
         githubTokenInput.value = config.token || DEFAULT_GIT_TOKEN;
         githubPathInput.value = config.path || 'Portfolio/assets/images';
         
-        // If it's a new device and we are pre-filling the default token, 
-        // keep the button disabled until they "Check" it for security.
-        saveGitConfig.disabled = true;
-        tokenStatus.textContent = config.token ? 'Identity Verified (Local)' : 'Ready for Handshake';
-        tokenStatus.style.color = config.token ? '#c5a059' : '#666';
+        saveGitConfig.disabled = config.token ? false : true; // Enable save if token already exists
+        tokenStatus.textContent = config.token ? '✅ Protocol Active' : 'Ready for Handshake';
+        tokenStatus.style.color = config.token ? '#28a745' : '#666';
         
         gitAuthModal.style.display = 'flex';
     };
