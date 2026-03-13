@@ -91,10 +91,11 @@ async function discoverImages() {
         });
     };
 
-    while (!stopDiscovery && i < 100) {
+    while (i < 100) {
         const batch = [];
         for (let j = 0; j < maxConcurrent; j++) {
             const idx = i + j;
+            if (idx >= 100) break;
             // Check main extensions in parallel
             extensions.forEach(ext => {
                 batch.push(checkImage(`assets/images/Img${idx}.${ext}`, `Img${idx}`, ext));
@@ -108,10 +109,8 @@ async function discoverImages() {
         
         if (foundInBatch.length > 0) {
             discovered.push(...foundInBatch);
-        } else {
-            // If an entire batch of 10 indices is empty, we've likely hit the end
-            stopDiscovery = true;
         }
+        
         i += maxConcurrent;
     }
     return discovered;
@@ -476,10 +475,14 @@ if (fileInput) {
 
                         if (response.ok) {
                             successCount++;
-                            photos.push({ src: `assets/images/${fullFileName}`, caption: nextName, ext: ext });
+                            // Dynamically determine local src: if 'Portfolio/' is in path, strip it for local preview
+                            const localPath = config.path.includes('Portfolio/') 
+                                ? config.path.split('Portfolio/')[1] 
+                                : config.path;
+                            photos.push({ src: `${localPath}/${fullFileName}`, caption: nextName, ext: ext });
                         } else {
                             const err = await response.json();
-                            throw new Error(err.message || 'GitHub API Error');
+                            throw new Error(`GitHub said: ${err.message} (Is your Path or Repo correct?)`);
                         }
                     } catch (err) {
                         alert(`Git Protocol Failed for ${file.name}: ${err.message}`);
@@ -539,11 +542,16 @@ if (saveAbout) {
     };
 }
 
-// 4. Initial Render & Gallery Logic
-async function initGallery() {
+// 7. Initialize Everything (Standard Protocol)
+window.addEventListener('DOMContentLoaded', async () => {
+    // A. Load saved content
+    loadAboutContent();
+
+    // B. Discover and Render Gallery
     photos = await discoverImages();
+    renderGallery(); 
     
-    // Random Hero Background Logic
+    // C. Random Hero Background Logic
     if (photos.length > 0) {
         const heroImg = document.getElementById('heroImage');
         if (heroImg) {
@@ -553,14 +561,4 @@ async function initGallery() {
             if (heroImg.complete) heroImg.style.opacity = '1';
         }
     }
-
-    renderGallery();
-}
-
-// 7. Initialize Everything
-async function init() {
-    loadAboutContent();
-    await initGallery();
-}
-
-init();
+});
