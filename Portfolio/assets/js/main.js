@@ -248,6 +248,8 @@ function openLightbox(idx) {
     lightboxImg.src = photos[idx].src;
     lightboxImg.classList.remove('zoomed');
     lightboxImg.style.transform = 'scale(1)';
+    lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
+    lightboxImg.style.transformOrigin = 'center center';
     if (captionDisplay) captionDisplay.textContent = photos[idx].caption;
     lightbox.style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -255,27 +257,34 @@ function openLightbox(idx) {
 
 if (lightboxImg) {
     const updateZoom = (e) => {
-        const rect = lightboxImg.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        lightboxImg.style.transformOrigin = `${x}% ${y}%`;
+        // Calculate percentage of mouse position in the viewport
+        const xPercent = (e.clientX / window.innerWidth) * 100;
+        const yPercent = (e.clientY / window.innerHeight) * 100;
+        
+        // Remove transition temporarily for real-time "sticky" panning
+        lightboxImg.style.transition = 'none';
+        lightboxImg.style.transformOrigin = `${xPercent}% ${yPercent}%`;
     };
 
     lightboxImg.onclick = (e) => {
         e.stopPropagation();
         if (zoomLevel === 1) {
-            zoomLevel = 2.5; // Premium zoom level
+            zoomLevel = 2.5; 
+            // Re-enable transition for the initial zoom "pop"
+            lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
             updateZoom(e);
             lightboxImg.style.transform = `scale(${zoomLevel})`;
             lightboxImg.classList.add('zoomed');
         } else {
             zoomLevel = 1;
+            lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
             lightboxImg.style.transform = 'scale(1)';
             lightboxImg.classList.remove('zoomed');
         }
     };
 
-    lightboxImg.onmousemove = (e) => {
+    // Track on lightbox for wider range, but logic is tied to zoomed state
+    lightbox.onmousemove = (e) => {
         if (zoomLevel > 1) {
             updateZoom(e);
         }
