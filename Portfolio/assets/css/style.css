@@ -557,6 +557,7 @@ nav a:hover { color: var(--accent-color); }
 .admin-form::-webkit-scrollbar-track { background: #0d0d0d; }
 .admin-form::-webkit-scrollbar-thumb { background: var(--accent-color); }
 
+.admin-modal-content input,
 .admin-form input, 
 .admin-form textarea {
     width: 100%;
@@ -570,6 +571,7 @@ nav a:hover { color: var(--accent-color); }
     transition: var(--transition);
 }
 
+.admin-modal-content input:focus,
 .admin-form input:focus, 
 .admin-form textarea:focus {
     outline: none;
