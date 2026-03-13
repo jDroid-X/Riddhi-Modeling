@@ -188,6 +188,11 @@ exitAdmin.onclick = () => {
     document.body.classList.remove('admin-mode');
 };
 
+const uploadBtn = document.getElementById('uploadBtn');
+if (uploadBtn) {
+    uploadBtn.onclick = () => fileInput.click();
+}
+
 fileInput.onchange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
