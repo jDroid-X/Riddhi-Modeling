@@ -323,6 +323,10 @@ if (exitAdmin) {
 }
 
 // Git Config Logic (Standard Protocol: Identity Auto-Fill)
+// NOTE: For security, GitHub will block any push that contains a real token string.
+// Please use the "Git Settings" panel once per device to save your token.
+const DEFAULT_GIT_TOKEN = ""; 
+
 if (gitConfigBtn) {
     gitConfigBtn.onclick = () => {
         const config = JSON.parse(localStorage.getItem('git_config')) || {};
@@ -330,9 +334,11 @@ if (gitConfigBtn) {
         // Auto-fill testing defaults if storage is empty
         githubUsernameInput.value = config.username || 'jDroid-X';
         githubRepoInput.value = config.repo || 'Riddhi-Modeling';
-        githubTokenInput.value = config.token || '';
+        githubTokenInput.value = config.token || DEFAULT_GIT_TOKEN;
         githubPathInput.value = config.path || 'Portfolio/assets/images';
         
+        // If it's a new device and we are pre-filling the default token, 
+        // keep the button disabled until they "Check" it for security.
         saveGitConfig.disabled = true;
         tokenStatus.textContent = config.token ? 'Identity Verified (Local)' : 'Ready for Handshake';
         tokenStatus.style.color = config.token ? '#c5a059' : '#666';
@@ -407,8 +413,10 @@ if (uploadBtn) {
 if (fileInput) {
     fileInput.onchange = async (e) => {
         const config = JSON.parse(localStorage.getItem('git_config'));
-        if (!config || !config.token) {
-            alert('Please configure Git Settings first (Username, Repo, and Token).');
+        
+        // Protocol Validation Check
+        if (!config || !config.token || !config.username || !config.repo) {
+            alert('⚠️ SYSTEM ALERT: Git Settings Incomplete\n\nYou must first verify and SAVE your Git Credentials in the settings panel before uploading.');
             gitAuthModal.style.display = 'flex';
             e.target.value = '';
             return;
