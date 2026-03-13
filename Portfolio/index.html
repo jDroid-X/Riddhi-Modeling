@@ -114,23 +114,23 @@
     </main>
 
     <footer>
+        <!-- Legal Disclaimer Marquee (Scrolling Above Buttons) -->
+        <div class="legal-disclaimer">
+            <div class="marquee-content">
+                <span>LEGAL DISCLAIMER: This portfolio is for personal evaluation and professional exhibition only. All images and content are protected by international copyright laws. Unauthorized reproduction, distribution, or public display of any material on this site will attract strict legal action and financial penalties. &copy; 2026 RIDDHI MODELING AGENCY.</span>
+                <span>LEGAL DISCLAIMER: This portfolio is for personal evaluation and professional exhibition only. All images and content are protected by international copyright laws. Unauthorized reproduction, distribution, or public display of any material on this site will attract strict legal action and financial penalties. &copy; 2026 RIDDHI MODELING AGENCY.</span>
+            </div>
+        </div>
         <div class="footer-content">
+            <!-- Admin Button (Extreme Left) -->
+            <div class="admin-access">
+                <button id="adminBtn" class="admin-btn">Admin</button>
+            </div>
             <p>&copy; 2026 RIDDHI. All Rights Reserved.</p>
             <div class="socials">
                 <a href="#">Instagram</a>
                 <a href="#">Behance</a>
                 <a href="#">Vogue</a>
-            </div>
-            <!-- Admin Button -->
-            <div class="admin-access">
-                <button id="adminBtn" class="admin-btn">Admin</button>
-            </div>
-        </div>
-        <!-- Legal Disclaimer Marquee -->
-        <div class="legal-disclaimer">
-            <div class="marquee-content">
-                <span>LEGAL DISCLAIMER: This portfolio is for personal evaluation and professional exhibition only. All images and content are protected by international copyright laws. Unauthorized reproduction, distribution, or public display of any material on this site will attract strict legal action and financial penalties. &copy; 2026 RIDDHI MODELING AGENCY.</span>
-                <span>LEGAL DISCLAIMER: This portfolio is for personal evaluation and professional exhibition only. All images and content are protected by international copyright laws. Unauthorized reproduction, distribution, or public display of any material on this site will attract strict legal action and financial penalties. &copy; 2026 RIDDHI MODELING AGENCY.</span>
             </div>
         </div>
     </footer>
@@ -253,13 +253,13 @@
         <div class="admin-modal-content">
             <h3>Git Sync Protocol</h3>
             <p id="uploadStatus">Preparing secure transfer...</p>
-            <div style="background: #000; height: 10px; width: 100%; border-radius: 5px; overflow: hidden; margin: 1.5rem 0; border: 1px solid #333;">
-                <div id="uploadProgressBar" style="height: 100%; width: 0%; background: var(--accent-color); transition: width 0.3s ease;"></div>
+            <div class="progress-container">
+                <div id="uploadProgressBar" class="progress-bar"></div>
             </div>
-            <div id="countdownContainer" style="font-family: monospace; color: var(--accent-color); font-size: 1.2rem; margin-bottom: 1.5rem;">
+            <div id="countdownContainer" class="countdown-timer">
                 Estimated Sync Time: <span id="syncTimer">--</span>s
             </div>
-            <p style="font-size: 0.8rem; color: #666;">Do not close the browser during the protocol handshake.</p>
+            <p class="modal-note">Do not close the browser during the protocol handshake.</p>
         </div>
     </div>
 
