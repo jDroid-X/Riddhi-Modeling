@@ -169,13 +169,76 @@ function renderGallery() {
     });
 }
 
-function deletePhoto(event, name) {
+async function deletePhoto(event, name) {
     event.stopPropagation();
-    const confirmed = confirm(`Remove "${name}" from preview? \n(Note: This will not delete the file from your computer or GitHub)`);
-    if (confirmed) {
-        photos = photos.filter(p => p.caption !== name);
-        renderGallery();
-        alert(`Photo removed from view. To delete permanently, remove the file from 'assets/images' and push to GitHub.`);
+    
+    const config = JSON.parse(localStorage.getItem('git_config'));
+    if (!config || !config.token) {
+        alert("Standard Protocol Identity Verification Failed: Please configure 'Git Settings' to enable remote deletion.");
+        return;
+    }
+
+    const photoToDelete = photos.find(p => p.caption === name);
+    if (!photoToDelete) return;
+
+    const confirmed = confirm(`🛑 PERMANENT ACTION: Do you want to delete "${name}" from the GitHub Repository folder? \n\nThis will remove it from the online website permanently.`);
+    if (!confirmed) return;
+
+    const uploadModal = document.getElementById('uploadModal');
+    const statusText = document.getElementById('uploadStatus');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const syncTimer = document.getElementById('syncTimer');
+
+    uploadModal.style.display = 'flex';
+    statusText.textContent = `Handshaking for Deletion: ${name}...`;
+    progressBar.style.width = '30%';
+    syncTimer.textContent = '⌛';
+
+    try {
+        // Find the file name from the source
+        const fileName = photoToDelete.src.split('/').pop();
+        const apiPath = `${config.path}/${fileName}`;
+        const url = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${apiPath}`;
+        
+        // Step 1: Request SHA Handshake
+        const getResponse = await fetch(url, {
+            headers: { 'Authorization': `token ${config.token}` }
+        });
+
+        if (!getResponse.ok) throw new Error("File ID (SHA) handshake failed.");
+        const fileData = await getResponse.json();
+        
+        progressBar.style.width = '60%';
+        statusText.textContent = `Executing Remote Purge...`;
+
+        // Step 2: Execute DELETE Protocol
+        const deleteResponse = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `token ${config.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Standard Protocol: Purge ${fileName}`,
+                sha: fileData.sha
+            })
+        });
+
+        if (deleteResponse.ok) {
+            photos = photos.filter(p => p.caption !== name);
+            renderGallery();
+            progressBar.style.width = '100%';
+            alert(`Git Protocol Success: "${name}" purged from GitHub.`);
+        } else {
+            const err = await deleteResponse.json();
+            throw new Error(err.message || 'Deletion Handshake Denied');
+        }
+    } catch (err) {
+        alert(`⚠️ Git Protocol Error: ${err.message}`);
+    } finally {
+        setTimeout(() => {
+            uploadModal.style.display = 'none';
+        }, 500);
     }
 }
 
