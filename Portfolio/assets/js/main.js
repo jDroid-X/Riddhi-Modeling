@@ -391,15 +391,20 @@ if (checkGitToken) {
 
 if (saveGitConfig) {
     saveGitConfig.onclick = () => {
+        // Standard Protocol: Trim and Normalize Identity
         const config = {
-            username: githubUsernameInput.value,
-            repo: githubRepoInput.value,
-            token: githubTokenInput.value,
-            path: githubPathInput.value || 'Portfolio/assets/images'
+            username: githubUsernameInput.value.trim(),
+            repo: githubRepoInput.value.trim(),
+            token: githubTokenInput.value.trim(),
+            path: githubPathInput.value.trim().replace(/\\/g, '/') || 'Portfolio/assets/images'
         };
+        
+        // Remove trailing/leading slashes for a clean API endpoint
+        config.path = config.path.replace(/^\/+|\/+$/g, '');
+        
         localStorage.setItem('git_config', JSON.stringify(config));
         gitAuthModal.style.display = 'none';
-        alert('Git Configuration Saved Locally.');
+        alert('Standard Protocol: Git Configuration Saved & Normalized.');
     };
 }
 
@@ -463,10 +468,13 @@ if (fileInput) {
 
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    const ext = file.name.split('.').pop();
+                    const ext = file.name.split('.').pop().toLowerCase();
                     const nextName = `Img${startNum + i}`;
                     const fullFileName = `${nextName}.${ext}`;
                     
+                    statusText.textContent = `Syncing [${i+1}/${files.length}]: ${fullFileName}...`;
+                    progressBar.style.width = `${50 + ((i + 1) / files.length) * 50}%`;
+
                     try {
                         const base64 = await new Promise((resolve) => {
                             const reader = new FileReader();
@@ -474,7 +482,8 @@ if (fileInput) {
                             reader.readAsDataURL(file);
                         });
 
-                        const response = await fetch(`https://api.github.com/repos/${config.username}/${config.repo}/contents/${config.path}/${fullFileName}`, {
+                        const uploadUrl = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${config.path}/${fullFileName}`;
+                        const response = await fetch(uploadUrl, {
                             method: 'PUT',
                             headers: {
                                 'Authorization': `token ${config.token}`,
@@ -489,23 +498,30 @@ if (fileInput) {
                         if (response.ok) {
                             successCount++;
                             // Dynamically determine local src: if 'Portfolio/' is in path, strip it for local preview
-                            const localPath = config.path.includes('Portfolio/') 
-                                ? config.path.split('Portfolio/')[1] 
-                                : config.path;
+                            // We use a regex to handle both slashes and case sensitivity
+                            const normalizedPath = config.path.replace(/\\/g, '/');
+                            const localPath = normalizedPath.includes('Portfolio/') 
+                                ? normalizedPath.split('Portfolio/')[1] 
+                                : normalizedPath;
+                            
                             photos.push({ src: `${localPath}/${fullFileName}`, caption: nextName, ext: ext });
                         } else {
                             const err = await response.json();
-                            throw new Error(`GitHub said: ${err.message} (Is your Path or Repo correct?)`);
+                            // Handle case where file already exists
+                            if (response.status === 409) {
+                                throw new Error(`Slot ${nextName} is already occupied on GitHub. Please check your gallery syncing.`);
+                            }
+                            throw new Error(`GitHub said: ${err.message}`);
                         }
                     } catch (err) {
-                        alert(`Git Protocol Failed for ${file.name}: ${err.message}`);
+                        alert(`🛑 Git Protocol Failed for ${file.name}:\n${err.message}`);
                     }
                 }
 
                 uploadModal.style.display = 'none';
                 if (successCount > 0) {
                     renderGallery();
-                    alert(`Standard Protocol Complete: ${successCount} files synced to GitHub!`);
+                    alert(`✅ Protocol Success: ${successCount} files synced and added to preview!`);
                 }
             }
         }, 1000);
