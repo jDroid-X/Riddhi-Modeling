@@ -322,16 +322,21 @@ if (exitAdmin) {
     };
 }
 
-// Git Config Logic
+// Git Config Logic (Standard Protocol: Identity Auto-Fill)
 if (gitConfigBtn) {
     gitConfigBtn.onclick = () => {
         const config = JSON.parse(localStorage.getItem('git_config')) || {};
-        githubUsernameInput.value = config.username || '';
-        githubRepoInput.value = config.repo || '';
+        
+        // Auto-fill testing defaults if storage is empty
+        githubUsernameInput.value = config.username || 'jDroid-X';
+        githubRepoInput.value = config.repo || 'Riddhi-Modeling';
         githubTokenInput.value = config.token || '';
         githubPathInput.value = config.path || 'Portfolio/assets/images';
+        
         saveGitConfig.disabled = true;
-        tokenStatus.textContent = '';
+        tokenStatus.textContent = config.token ? 'Identity Verified (Local)' : 'Ready for Handshake';
+        tokenStatus.style.color = config.token ? '#c5a059' : '#666';
+        
         gitAuthModal.style.display = 'flex';
     };
 }
