@@ -164,6 +164,22 @@ async function discoverRemainingImages() {
     }
 }
 
+// 4. THE MOOD ENGINE (Pseudo-AI Narrative Generator)
+const moodVocabulary = [
+    "Ethereal Glow", "Urban Noir", "Avant-Garde", "Midnight Muse", 
+    "Golden Aura", "Velvet Edge", "Noir Chic", "Timeless Soul",
+    "Neon Pulse", "Raw Spirit", "High Contrast", "Soft Whisper",
+    "Bold Grace", "Elegance Redefined", "Shadow Play", "Pure Vision",
+    "Urban Pulse", "Eternal Muse", "Chic Rebellion", "Stardust"
+];
+
+function getPhotoMood(idx) {
+    // Deterministic selection based on index to simulate "recognition"
+    const hash = (idx * 9301 + 49297) % 233280;
+    const moodIdx = Math.floor((hash / 233280) * moodVocabulary.length);
+    return moodVocabulary[moodIdx];
+}
+
 const galleryObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -191,8 +207,8 @@ function renderGallery() {
                         <path id="curve-${idx}" d="M 10,60 Q 125,10 240,60" fill="transparent" />
                         <text>
                             <textPath href="#curve-${idx}" startOffset="50%" text-anchor="middle">
-                                MOOD // ${photo.caption}
-                            </textPath>
+                            ${getPhotoMood(idx)}
+                        </textPath>
                         </text>
                     </svg>
                 </div>
@@ -324,7 +340,7 @@ function openLightbox(idx) {
     lightboxImg.style.transform = 'scale(1)';
     lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
     lightboxImg.style.transformOrigin = 'center center';
-    if (captionDisplay) captionDisplay.textContent = photos[idx].caption;
+    if (captionDisplay) captionDisplay.textContent = getPhotoMood(idx);
     lightbox.style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
