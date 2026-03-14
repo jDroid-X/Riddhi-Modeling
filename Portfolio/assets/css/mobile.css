@@ -82,19 +82,12 @@
     }
 
     .hero-text {
-        font-size: 3.5rem; 
         letter-spacing: 0.5rem;
-    }
-
-    .hero-subtitle {
-        font-size: 0.85rem;
-        letter-spacing: 0.3rem;
-        margin-top: 0;
     }
 
     .gallery {
         grid-template-columns: 1fr;
-        grid-auto-rows: 350px;
+        grid-auto-rows: clamp(350px, 60vh, 500px);
         gap: 2rem;
     }
 
@@ -107,7 +100,7 @@
         order: -1;
     }
 
-    .contact-title { font-size: 2.5rem; }
+    .contact-title { font-size: clamp(2rem, 10vw, 3.5rem); }
 
     .admin-toolbar {
         padding: 1rem;
