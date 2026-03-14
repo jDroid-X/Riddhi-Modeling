@@ -12,12 +12,22 @@
         width: 100%;
         min-height: 100vh;
         margin: 0;
-        padding: 1rem 1rem 120px 1rem !important; /* Huge bottom padding for the buttons */
+        padding: 1.5rem 1.5rem 150px 1.5rem !important; 
         border: none;
         border-radius: 0;
-        overflow-y: visible;
+        overflow-y: auto;
         display: block;
         max-height: none !important;
+    }
+
+    .modal-step {
+        width: 100%;
+        animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .modal-grid {

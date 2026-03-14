@@ -194,89 +194,78 @@
     <!-- About Edit Modal -->
     <div id="aboutModal" class="admin-modal">
         <div class="admin-modal-content wide">
-            <h3>Edit Model Profile</h3>
-            <div class="modal-grid">
-                <!-- Column 1: Portrait Management -->
-                <div class="modal-column">
-                    <div class="form-section">
-                        <label class="selector-label">1. Bio Portrait</label>
-                        <div class="preview-zone">
-                            <img id="currentPortraitPreview" src="assets/images/Potrait.jpeg" alt="Current Portrait">
-                            <button id="updatePortraitBtn" class="update-branding-btn" disabled>Update Portrait</button>
-                        </div>
-                        <div id="portraitSelector" class="thumbnail-selector">
-                            <!-- Populated by JS -->
-                        </div>
+            <div class="modal-header">
+                <h3>Edit Model Profile</h3>
+                <div class="step-indicator">
+                    <span class="step-dot active" data-step="1"></span>
+                    <span class="step-dot" data-step="2"></span>
+                    <span class="step-dot" data-step="3"></span>
+                </div>
+            </div>
+
+            <!-- Page 1: Portrait Management -->
+            <div class="modal-step" id="step1">
+                <div class="form-section">
+                    <label class="selector-label">Step 1: Bio Portrait Selection</label>
+                    <p class="step-desc">Select a photo from your gallery to use as your professional bio portrait.</p>
+                    <div class="preview-zone">
+                        <img id="currentPortraitPreview" src="assets/images/Potrait.jpeg" alt="Current Portrait">
+                        <button id="updatePortraitBtn" class="update-branding-btn" disabled>Apply Portrait</button>
+                    </div>
+                    <div id="portraitSelector" class="thumbnail-selector">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
+            </div>
 
-                <!-- Column 2: Data Form -->
-                <div class="modal-column">
-                    <div class="admin-form">
-                        <div class="form-section">
-                            <label>Professional Bio</label>
-                            <input type="text" id="editAboutTitle" placeholder="Portfolio Heading">
-                            <textarea id="editAboutBody" placeholder="Professional experience and bio..." rows="4"></textarea>
-                        </div>
-                        
-                        <div class="form-section">
-                            <label>Body Measurements (Industry Stats)</label>
-                            <div class="stats-input-grid">
-                                <div class="input-field">
-                                    <span>Height</span>
-                                    <input type="text" id="statHeight" placeholder="5'7\"">
-                                </div>
-                                <div class="input-field">
-                                    <span>Bust</span>
-                                    <input type="text" id="statBust" placeholder="32\"">
-                                </div>
-                                <div class="input-field">
-                                    <span>Waist</span>
-                                    <input type="text" id="statWaist" placeholder="24\"">
-                                </div>
-                                <div class="input-field">
-                                    <span>Hips</span>
-                                    <input type="text" id="statHips" placeholder="34\"">
-                                </div>
-                                <div class="input-field">
-                                    <span>Eyes</span>
-                                    <input type="text" id="statEyes" placeholder="Brown">
-                                </div>
-                                <div class="input-field">
-                                    <span>Hair</span>
-                                    <input type="text" id="statHair" placeholder="Black">
-                                </div>
-                                <div class="input-field">
-                                    <span>Shoes</span>
-                                    <input type="text" id="statShoes" placeholder="8 US">
-                                </div>
-                                <div class="input-field">
-                                    <span>Dress</span>
-                                    <input type="text" id="statDress" placeholder="2 US">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Column 3: Backdrop Management -->
-                <div class="modal-column">
+            <!-- Page 2: Data Form -->
+            <div class="modal-step hidden-step" id="step2">
+                <div class="admin-form">
                     <div class="form-section">
-                        <label class="selector-label">2. Hero Backdrop</label>
-                        <div class="preview-zone">
-                            <img id="currentBackdropPreview" src="assets/images/backdrop.jpeg" alt="Current Backdrop">
-                            <button id="updateBackdropBtn" class="update-branding-btn" disabled>Update Backdrop</button>
-                        </div>
-                        <div id="backdropSelector" class="thumbnail-selector">
-                            <!-- Populated by JS -->
+                        <label>Step 2: Professional Bio & Info</label>
+                        <p class="step-desc">Update your public heading and professional summary.</p>
+                        <input type="text" id="editAboutTitle" placeholder="Portfolio Heading">
+                        <textarea id="editAboutBody" placeholder="Professional experience and bio..." rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label>Body Measurements (Industry Stats)</label>
+                        <div class="stats-input-grid">
+                            <div class="input-field"><span>Height</span><input type="text" id="statHeight" placeholder="5'7\""></div>
+                            <div class="input-field"><span>Bust</span><input type="text" id="statBust" placeholder="32\""></div>
+                            <div class="input-field"><span>Waist</span><input type="text" id="statWaist" placeholder="24\""></div>
+                            <div class="input-field"><span>Hips</span><input type="text" id="statHips" placeholder="34\""></div>
+                            <div class="input-field"><span>Eyes</span><input type="text" id="statEyes" placeholder="Brown"></div>
+                            <div class="input-field"><span>Hair</span><input type="text" id="statHair" placeholder="Black"></div>
+                            <div class="input-field"><span>Shoes</span><input type="text" id="statShoes" placeholder="8 US"></div>
+                            <div class="input-field"><span>Dress</span><input type="text" id="statDress" placeholder="2 US"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Page 3: Backdrop Management -->
+            <div class="modal-step hidden-step" id="step3">
+                <div class="form-section">
+                    <label class="selector-label">Step 3: Website Backdrop</label>
+                    <p class="step-desc">Select the main background image for your website hero section.</p>
+                    <div class="preview-zone">
+                        <img id="currentBackdropPreview" src="assets/images/backdrop.jpeg" alt="Current Backdrop">
+                        <button id="updateBackdropBtn" class="update-branding-btn" disabled>Apply Backdrop</button>
+                    </div>
+                    <div id="backdropSelector" class="thumbnail-selector">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
             <div class="modal-actions">
-                <button id="cancelAbout">Cancel</button>
-                <button id="saveAbout">Save All & Finish</button>
+                <button id="cancelAbout" class="btn-secondary">Close</button>
+                <div class="nav-btns">
+                    <button id="prevStep" class="hidden-step">Back</button>
+                    <button id="nextStep">Next Step</button>
+                    <button id="saveAbout" class="hidden-step">Save & Finish</button>
+                </div>
             </div>
         </div>
     </div>

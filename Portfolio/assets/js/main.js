@@ -56,6 +56,10 @@ let selectedBackdrop = null;
 const portraitSelector = document.getElementById('portraitSelector');
 const backdropSelector = document.getElementById('backdropSelector');
 
+// Wizard State
+let currentStep = 1;
+const totalSteps = 3;
+
 // Stat Display Mapping
 const displays = {
     height: document.getElementById('displayHeight'),
@@ -661,6 +665,10 @@ if (editAboutBtn) {
         document.getElementById('updatePortraitBtn').disabled = true;
         document.getElementById('updateBackdropBtn').disabled = true;
         
+        // Reset Wizard to Page 1
+        currentStep = 1;
+        updateWizardSteps();
+        
         // Add timestamps to bypass cache for previews
         document.getElementById('currentPortraitPreview').src = 'assets/images/Potrait.jpeg?t=' + Date.now();
         document.getElementById('currentBackdropPreview').src = 'assets/images/backdrop.jpeg?t=' + Date.now();
@@ -669,6 +677,54 @@ if (editAboutBtn) {
         aboutModal.style.display = 'flex';
     };
 }
+
+function updateWizardSteps() {
+    // 1. Show/Hide Actual Content Pages
+    document.querySelectorAll('.modal-step').forEach(step => {
+        step.classList.add('hidden-step');
+    });
+    const activeStepDiv = document.getElementById(`step${currentStep}`);
+    if (activeStepDiv) activeStepDiv.classList.remove('hidden-step');
+
+    // 2. Update Dots
+    document.querySelectorAll('.step-dot').forEach((dot, idx) => {
+        dot.classList.toggle('active', idx + 1 === currentStep);
+    });
+
+    // 3. Update Navigation Buttons
+    const prevBtn = document.getElementById('prevStep');
+    const nextBtn = document.getElementById('nextStep');
+    const saveBtn = document.getElementById('saveAbout');
+
+    if (currentStep === 1) {
+        prevBtn.classList.add('hidden-step');
+        nextBtn.classList.remove('hidden-step');
+        saveBtn.classList.add('hidden-step');
+    } else if (currentStep === totalSteps) {
+        prevBtn.classList.remove('hidden-step');
+        nextBtn.classList.add('hidden-step');
+        saveBtn.classList.remove('hidden-step');
+    } else {
+        prevBtn.classList.remove('hidden-step');
+        nextBtn.classList.remove('hidden-step');
+        saveBtn.classList.add('hidden-step');
+    }
+}
+
+// Wizard Button Listeners
+document.getElementById('nextStep').onclick = () => {
+    if (currentStep < totalSteps) {
+        currentStep++;
+        updateWizardSteps();
+    }
+};
+
+document.getElementById('prevStep').onclick = () => {
+    if (currentStep > 1) {
+        currentStep--;
+        updateWizardSteps();
+    }
+};
 
 // Independent Image Handlers
 document.getElementById('updatePortraitBtn').onclick = async () => {
