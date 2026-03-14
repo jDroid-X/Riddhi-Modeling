@@ -194,17 +194,15 @@
         <div class="admin-modal-content wide">
             <h3>Edit Model Profile</h3>
             <div class="modal-grid">
-                <!-- Column 1: Image Selectors -->
+                <!-- Column 1: Portrait Management -->
                 <div class="modal-column">
                     <div class="form-section">
-                        <label class="selector-label">Bio Portrait (Selection)</label>
-                        <div id="portraitSelector" class="thumbnail-selector">
-                            <!-- Populated by JS -->
+                        <label class="selector-label">1. Bio Portrait</label>
+                        <div class="preview-zone">
+                            <img id="currentPortraitPreview" src="assets/images/Potrait.jpeg" alt="Current Portrait">
+                            <button id="updatePortraitBtn" class="update-branding-btn" disabled>Update Portrait</button>
                         </div>
-                    </div>
-                    <div class="form-section">
-                        <label class="selector-label">Hero Backdrop (Selection)</label>
-                        <div id="backdropSelector" class="thumbnail-selector">
+                        <div id="portraitSelector" class="thumbnail-selector">
                             <!-- Populated by JS -->
                         </div>
                     </div>
@@ -258,10 +256,25 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Column 3: Backdrop Management -->
+                <div class="modal-column">
+                    <div class="form-section">
+                        <label class="selector-label">2. Hero Backdrop</label>
+                        <div class="preview-zone">
+                            <img id="currentBackdropPreview" src="assets/images/backdrop.jpeg" alt="Current Backdrop">
+                            <button id="updateBackdropBtn" class="update-branding-btn" disabled>Update Backdrop</button>
+                        </div>
+                        <div id="backdropSelector" class="thumbnail-selector">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
             </div>
+
             <div class="modal-actions">
                 <button id="cancelAbout">Cancel</button>
-                <button id="saveAbout">Save Profile</button>
+                <button id="saveAbout">Save All & Finish</button>
             </div>
         </div>
     </div>

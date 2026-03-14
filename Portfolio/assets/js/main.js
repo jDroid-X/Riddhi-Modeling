@@ -206,27 +206,29 @@ function populateSelectionGalleries() {
     backdropSelector.innerHTML = '';
 
     photos.forEach(photo => {
-        // Create portrait thumb
-        const pThumb = document.createElement('img');
-        pThumb.src = photo.src;
-        pThumb.className = 'thumb-item';
-        pThumb.onclick = () => {
-             document.querySelectorAll('#portraitSelector .thumb-item').forEach(t => t.classList.remove('selected'));
-             pThumb.classList.add('selected');
-             selectedPortrait = photo;
+        // Portrait Selection
+        const pContainer = document.createElement('div');
+        pContainer.className = 'thumb-container';
+        pContainer.innerHTML = `<img src="${photo.src}" class="thumb-item"><div class="check-badge">✓</div>`;
+        pContainer.onclick = () => {
+            document.querySelectorAll('#portraitSelector .thumb-item').forEach(t => t.classList.remove('selected'));
+            pContainer.querySelector('img').classList.add('selected');
+            selectedPortrait = photo;
+            document.getElementById('updatePortraitBtn').disabled = false;
         };
-        portraitSelector.appendChild(pThumb);
+        portraitSelector.appendChild(pContainer);
 
-        // Create backdrop thumb
-        const bThumb = document.createElement('img');
-        bThumb.src = photo.src;
-        bThumb.className = 'thumb-item';
-        bThumb.onclick = () => {
-             document.querySelectorAll('#backdropSelector .thumb-item').forEach(t => t.classList.remove('selected'));
-             bThumb.classList.add('selected');
-             selectedBackdrop = photo;
+        // Backdrop Selection
+        const bContainer = document.createElement('div');
+        bContainer.className = 'thumb-container';
+        bContainer.innerHTML = `<img src="${photo.src}" class="thumb-item"><div class="check-badge">✓</div>`;
+        bContainer.onclick = () => {
+            document.querySelectorAll('#backdropSelector .thumb-item').forEach(t => t.classList.remove('selected'));
+            bContainer.querySelector('img').classList.add('selected');
+            selectedBackdrop = photo;
+            document.getElementById('updateBackdropBtn').disabled = false;
         };
-        backdropSelector.appendChild(bThumb);
+        backdropSelector.appendChild(bContainer);
     });
 }
 
@@ -653,63 +655,90 @@ if (editAboutBtn) {
         editAboutBody.value = aboutSectionBody.textContent;
         Object.keys(inputs).forEach(key => { if (displays[key]) inputs[key].value = displays[key].textContent; });
         
-        // Reset and populate selections
+        // Reset selections and previews
         selectedPortrait = null;
         selectedBackdrop = null;
-        populateSelectionGalleries();
+        document.getElementById('updatePortraitBtn').disabled = true;
+        document.getElementById('updateBackdropBtn').disabled = true;
         
+        // Add timestamps to bypass cache for previews
+        document.getElementById('currentPortraitPreview').src = 'assets/images/Potrait.jpeg?t=' + Date.now();
+        document.getElementById('currentBackdropPreview').src = 'assets/images/backdrop.jpeg?t=' + Date.now();
+
+        populateSelectionGalleries();
         aboutModal.style.display = 'flex';
     };
 }
+
+// Independent Image Handlers
+document.getElementById('updatePortraitBtn').onclick = async () => {
+    if (!selectedPortrait) return;
+    const config = JSON.parse(localStorage.getItem('git_config'));
+    if (!config || !config.token) {
+        alert("⚠️ Git Configuration Required for handshake.");
+        return;
+    }
+
+    const uploadModal = document.getElementById('uploadModal');
+    const statusText = document.getElementById('uploadStatus');
+    const progressBar = document.getElementById('uploadProgressBar');
+
+    uploadModal.style.display = 'flex';
+    statusText.textContent = "Syncing Bio Portrait...";
+    progressBar.style.width = '50%';
+
+    const ext = selectedPortrait.src.split('.').pop();
+    const fileName = `${selectedPortrait.caption}.${ext}`;
+    const success = await gitCopyFile(`${config.path}/${fileName}`, 'Potrait.jpeg', config);
+    
+    if (success) {
+        progressBar.style.width = '100%';
+        document.getElementById('currentPortraitPreview').src = 'assets/images/Potrait.jpeg?t=' + Date.now();
+        const mainPortrait = document.querySelector('.portrait-img');
+        if (mainPortrait) mainPortrait.src = 'assets/images/Potrait.jpeg?t=' + Date.now();
+        setTimeout(() => uploadModal.style.display = 'none', 1000);
+    } else {
+        alert("🛑 Sync Failed.");
+        uploadModal.style.display = 'none';
+    }
+};
+
+document.getElementById('updateBackdropBtn').onclick = async () => {
+    if (!selectedBackdrop) return;
+    const config = JSON.parse(localStorage.getItem('git_config'));
+    if (!config || !config.token) {
+        alert("⚠️ Git Configuration Required for handshake.");
+        return;
+    }
+
+    const uploadModal = document.getElementById('uploadModal');
+    const statusText = document.getElementById('uploadStatus');
+    const progressBar = document.getElementById('uploadProgressBar');
+
+    uploadModal.style.display = 'flex';
+    statusText.textContent = "Syncing Hero Backdrop...";
+    progressBar.style.width = '50%';
+
+    const ext = selectedBackdrop.src.split('.').pop();
+    const fileName = `${selectedBackdrop.caption}.${ext}`;
+    const success = await gitCopyFile(`${config.path}/${fileName}`, 'backdrop.jpeg', config);
+    
+    if (success) {
+        progressBar.style.width = '100%';
+        document.getElementById('currentBackdropPreview').src = 'assets/images/backdrop.jpeg?t=' + Date.now();
+        const mainHero = document.getElementById('heroImage');
+        if (mainHero) mainHero.src = 'assets/images/backdrop.jpeg?t=' + Date.now();
+        setTimeout(() => uploadModal.style.display = 'none', 1000);
+    } else {
+        alert("🛑 Sync Failed.");
+        uploadModal.style.display = 'none';
+    }
+};
 
 if (cancelAbout) cancelAbout.onclick = () => aboutModal.style.display = 'none';
 
 if (saveAbout) {
     saveAbout.onclick = async () => {
-        const config = JSON.parse(localStorage.getItem('git_config'));
-        const uploadModal = document.getElementById('uploadModal');
-        const statusText = document.getElementById('uploadStatus');
-        const progressBar = document.getElementById('uploadProgressBar');
-
-        // A. Handle Image Operations (Sync to Git)
-        if (selectedPortrait || selectedBackdrop) {
-            if (!config || !config.token) {
-                alert("⚠️ Local changes only: Please configure Git Settings to sync image changes online.");
-            } else {
-                uploadModal.style.display = 'flex';
-                statusText.textContent = "Initiating Branding Handshake...";
-                progressBar.style.width = '20%';
-
-                if (selectedPortrait) {
-                    statusText.textContent = "Syncing Bio Portrait...";
-                    const ext = selectedPortrait.src.split('.').pop();
-                    const fileName = `${selectedPortrait.caption}.${ext}`;
-                    const sourcePath = `${config.path}/${fileName}`;
-                    const success = await gitCopyFile(sourcePath, 'Potrait.jpeg', config);
-                    if (success) {
-                         const portraitImg = document.querySelector('.portrait-img');
-                         if (portraitImg) portraitImg.src = 'assets/images/Potrait.jpeg?t=' + Date.now();
-                    }
-                }
-                progressBar.style.width = '60%';
-
-                if (selectedBackdrop) {
-                    statusText.textContent = "Syncing Hero Backdrop...";
-                    const ext = selectedBackdrop.src.split('.').pop();
-                    const fileName = `${selectedBackdrop.caption}.${ext}`;
-                    const sourcePath = `${config.path}/${fileName}`;
-                    const success = await gitCopyFile(sourcePath, 'backdrop.jpeg', config);
-                    if (success) {
-                         const heroImg = document.getElementById('heroImage');
-                         if (heroImg) heroImg.src = 'assets/images/backdrop.jpeg?t=' + Date.now();
-                    }
-                }
-                progressBar.style.width = '100%';
-                setTimeout(() => uploadModal.style.display = 'none', 1000);
-            }
-        }
-        // ... rest of stats logic
-
         // B. Handle Stats Data
         const statsData = {};
         Object.keys(inputs).forEach(key => {
@@ -722,7 +751,7 @@ if (saveAbout) {
         localStorage.setItem('portfolio_about', JSON.stringify(profileData));
         
         aboutModal.style.display = 'none';
-        alert("Standard Protocol: Profile & Imagery Updated Successfully!");
+        alert("Standard Protocol: Bio Data Updated Successfully!");
     };
 }
 
