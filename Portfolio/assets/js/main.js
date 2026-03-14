@@ -145,16 +145,23 @@ async function discoverRemainingImages() {
             });
         }
         const results = await Promise.all(batch);
+        let newlyFound = false;
         results.forEach(r => { 
             if (r && !photos.find(p => p.src === r.src)) {
                 photos.push(r);
+                newlyFound = true;
             }
         });
+        
+        // Dynamic UI Update: Show images as they are discovered
+        if (newlyFound) {
+            renderGallery();
+            if (aboutModal.style.display === 'flex') populateSelectionGalleries();
+        }
+
         i += maxConcurrent;
         await new Promise(r => setTimeout(r, 100));
     }
-    // Refresh selectors if modal is open
-    if (aboutModal.style.display === 'flex') populateSelectionGalleries();
 }
 
 const galleryObserver = new IntersectionObserver((entries) => {
