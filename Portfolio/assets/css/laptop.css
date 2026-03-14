@@ -9,15 +9,17 @@
     }
 }
 
-/* Three-Column Branding Layout (Default Laptop View) */
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr;
-    gap: 2rem;
-    align-items: start;
-}
+/* Three-Column Branding Layout (Laptop View: 1101px and Above) */
+@media (min-width: 1101px) {
+    .modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
 
-.admin-modal-content.wide {
-    max-width: 1400px;
-    width: 95%;
+    .admin-modal-content.wide {
+        max-width: 1400px;
+        width: 95%;
+    }
 }
