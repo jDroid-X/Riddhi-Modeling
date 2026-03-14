@@ -3,6 +3,64 @@
    ============================================================ */
 
 @media (max-width: 768px) {
+    .admin-modal {
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .admin-modal-content {
+        width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 1rem 1rem 120px 1rem !important; /* Huge bottom padding for the buttons */
+        border: none;
+        border-radius: 0;
+        overflow-y: visible;
+        display: block;
+        max-height: none !important;
+    }
+
+    .modal-grid {
+        display: block !important;
+    }
+
+    .modal-column {
+        width: 100% !important;
+        margin-bottom: 2rem;
+    }
+
+    .admin-form {
+        max-height: none !important;
+        overflow: visible !important;
+        padding-right: 0;
+    }
+
+    .modal-actions {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #111;
+        padding: 1.5rem;
+        border-top: 2px solid var(--accent-color);
+        z-index: 10000;
+        margin: 0;
+        display: flex;
+        gap: 10px;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+    }
+    
+    .modal-actions button {
+        flex: 1;
+        padding: 1.2rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    .stats-input-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px;
+    }
+
     .nav-container {
         flex-direction: column;
         gap: 1.5rem;
@@ -39,37 +97,6 @@
         order: -1;
     }
 
-    .admin-modal-content {
-        width: 95%;
-        padding: 1.2rem;
-        max-height: 95vh;
-        overflow-y: auto;
-        display: block;
-    }
-
-    .admin-form {
-        max-height: none;
-        overflow-y: visible;
-        background: none;
-        border: none;
-        padding: 0;
-    }
-
-    .modal-actions {
-        position: sticky;
-        bottom: -1.2rem;
-        background: var(--bg-color);
-        padding: 1rem 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        z-index: 10;
-        margin-top: 2rem;
-    }
-
-    .stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-
     .contact-title { font-size: 2.5rem; }
 
     .admin-toolbar {
@@ -90,10 +117,5 @@
         flex: 1;
         min-width: 120px;
         font-size: 0.7rem;
-    }
-
-    /* 3-Column Modal becomes Single Column on Mobile */
-    .modal-grid {
-        grid-template-columns: 1fr;
     }
 }
