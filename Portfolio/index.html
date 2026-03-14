@@ -45,7 +45,7 @@
     <main>
         <section class="hero">
             <div class="hero-image-container">
-                <img id="heroImage" src="assets/images/Img1.jpeg" alt="Riddhi Hero" class="hero-bg-image">
+                <img id="heroImage" src="assets/images/backdrop.jpeg" alt="Riddhi Hero" class="hero-bg-image">
             </div>
             <div class="hero-content">
                 <div class="svg-text-container">
@@ -74,7 +74,7 @@
             <div class="container">
                 <div class="about-grid">
                     <div class="about-image" data-aos="fade-right">
-                        <img src="assets/images/Img1.jpeg" alt="Riddhi Portrait" class="portrait-img">
+                        <img src="assets/images/Potrait.jpeg" alt="Riddhi Portrait" class="portrait-img">
                     </div>
                     <div class="about-text">
                         <h2 class="section-title">The Muse</h2>
@@ -191,49 +191,70 @@
 
     <!-- About Edit Modal -->
     <div id="aboutModal" class="admin-modal">
-        <div class="admin-modal-content edit-about-modal">
+        <div class="admin-modal-content wide">
             <h3>Edit Model Profile</h3>
-            <div class="admin-form">
-                <div class="form-section">
-                    <label>Professional Bio</label>
-                    <input type="text" id="editAboutTitle" placeholder="Portfolio Heading">
-                    <textarea id="editAboutBody" placeholder="Professional experience and bio..." rows="4"></textarea>
+            <div class="modal-grid">
+                <!-- Column 1: Image Selectors -->
+                <div class="modal-column">
+                    <div class="form-section">
+                        <label class="selector-label">Bio Portrait (Selection)</label>
+                        <div id="portraitSelector" class="thumbnail-selector">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <label class="selector-label">Hero Backdrop (Selection)</label>
+                        <div id="backdropSelector" class="thumbnail-selector">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="form-section">
-                    <label>Body Measurements (Industry Stats)</label>
-                    <div class="stats-input-grid">
-                        <div class="input-field">
-                            <span>Height</span>
-                            <input type="text" id="statHeight" placeholder="5'7\"">
+
+                <!-- Column 2: Data Form -->
+                <div class="modal-column">
+                    <div class="admin-form">
+                        <div class="form-section">
+                            <label>Professional Bio</label>
+                            <input type="text" id="editAboutTitle" placeholder="Portfolio Heading">
+                            <textarea id="editAboutBody" placeholder="Professional experience and bio..." rows="4"></textarea>
                         </div>
-                        <div class="input-field">
-                            <span>Bust</span>
-                            <input type="text" id="statBust" placeholder="32\"">
-                        </div>
-                        <div class="input-field">
-                            <span>Waist</span>
-                            <input type="text" id="statWaist" placeholder="24\"">
-                        </div>
-                        <div class="input-field">
-                            <span>Hips</span>
-                            <input type="text" id="statHips" placeholder="34\"">
-                        </div>
-                        <div class="input-field">
-                            <span>Eyes</span>
-                            <input type="text" id="statEyes" placeholder="Brown">
-                        </div>
-                        <div class="input-field">
-                            <span>Hair</span>
-                            <input type="text" id="statHair" placeholder="Black">
-                        </div>
-                        <div class="input-field">
-                            <span>Shoes</span>
-                            <input type="text" id="statShoes" placeholder="8 US">
-                        </div>
-                        <div class="input-field">
-                            <span>Dress</span>
-                            <input type="text" id="statDress" placeholder="2 US">
+                        
+                        <div class="form-section">
+                            <label>Body Measurements (Industry Stats)</label>
+                            <div class="stats-input-grid">
+                                <div class="input-field">
+                                    <span>Height</span>
+                                    <input type="text" id="statHeight" placeholder="5'7\"">
+                                </div>
+                                <div class="input-field">
+                                    <span>Bust</span>
+                                    <input type="text" id="statBust" placeholder="32\"">
+                                </div>
+                                <div class="input-field">
+                                    <span>Waist</span>
+                                    <input type="text" id="statWaist" placeholder="24\"">
+                                </div>
+                                <div class="input-field">
+                                    <span>Hips</span>
+                                    <input type="text" id="statHips" placeholder="34\"">
+                                </div>
+                                <div class="input-field">
+                                    <span>Eyes</span>
+                                    <input type="text" id="statEyes" placeholder="Brown">
+                                </div>
+                                <div class="input-field">
+                                    <span>Hair</span>
+                                    <input type="text" id="statHair" placeholder="Black">
+                                </div>
+                                <div class="input-field">
+                                    <span>Shoes</span>
+                                    <input type="text" id="statShoes" placeholder="8 US">
+                                </div>
+                                <div class="input-field">
+                                    <span>Dress</span>
+                                    <input type="text" id="statDress" placeholder="2 US">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

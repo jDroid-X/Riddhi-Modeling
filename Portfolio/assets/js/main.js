@@ -49,6 +49,12 @@ const lightboxImg = document.getElementById('lightbox-img');
 const captionDisplay = document.getElementById('lightbox-caption');
 let currentIdx = 0;
 let zoomLevel = 1;
+let selectedPortrait = null;
+let selectedBackdrop = null;
+
+// Thumbnail Selection Elements
+const portraitSelector = document.getElementById('portraitSelector');
+const backdropSelector = document.getElementById('backdropSelector');
 
 // Stat Display Mapping
 const displays = {
@@ -158,6 +164,37 @@ function renderGallery() {
         
         galleryContainer.appendChild(item);
         galleryObserver.observe(item);
+    });
+}
+
+function populateSelectionGalleries() {
+    if (!portraitSelector || !backdropSelector) return;
+    
+    portraitSelector.innerHTML = '';
+    backdropSelector.innerHTML = '';
+
+    photos.forEach(photo => {
+        // Create portrait thumb
+        const pThumb = document.createElement('img');
+        pThumb.src = photo.src;
+        pThumb.className = 'thumb-item';
+        pThumb.onclick = () => {
+             document.querySelectorAll('#portraitSelector .thumb-item').forEach(t => t.classList.remove('selected'));
+             pThumb.classList.add('selected');
+             selectedPortrait = photo;
+        };
+        portraitSelector.appendChild(pThumb);
+
+        // Create backdrop thumb
+        const bThumb = document.createElement('img');
+        bThumb.src = photo.src;
+        bThumb.className = 'thumb-item';
+        bThumb.onclick = () => {
+             document.querySelectorAll('#backdropSelector .thumb-item').forEach(t => t.classList.remove('selected'));
+             bThumb.classList.add('selected');
+             selectedBackdrop = photo;
+        };
+        backdropSelector.appendChild(bThumb);
     });
 }
 
@@ -401,6 +438,49 @@ if (saveGitConfig) {
 
 if (cancelGitConfig) cancelGitConfig.onclick = () => gitAuthModal.style.display = 'none';
 
+async function gitCopyFile(sourcePath, targetFileName, config) {
+    try {
+        // 1. Get source file content
+        const getUrl = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${sourcePath}`;
+        const getRes = await fetch(getUrl, {
+            headers: { 'Authorization': `token ${config.token}` }
+        });
+        if (!getRes.ok) throw new Error("Could not read source file from GitHub.");
+        const fileData = await getRes.json();
+
+        // 2. Get target file SHA (if it exists) to overwrite
+        const targetUrl = `https://api.github.com/repos/${config.username}/${config.repo}/contents/${config.path}/${targetFileName}`;
+        const targetRes = await fetch(targetUrl, {
+            headers: { 'Authorization': `token ${config.token}` }
+        });
+        let sha = null;
+        if (targetRes.ok) {
+            const targetData = await targetRes.json();
+            sha = targetData.sha;
+        }
+
+        // 3. PUT the content to the new target
+        const putRes = await fetch(targetUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${config.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Standard Protocol: Update ${targetFileName} from ${sourcePath}`,
+                content: fileData.content,
+                sha: sha
+            })
+        });
+
+        if (!putRes.ok) throw new Error(`Failed to update ${targetFileName} on GitHub.`);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
 
 if (uploadBtn) {
     uploadBtn.onclick = () => fileInput.click();
@@ -540,6 +620,12 @@ if (editAboutBtn) {
         editAboutTitle.value = aboutSectionTitle.textContent;
         editAboutBody.value = aboutSectionBody.textContent;
         Object.keys(inputs).forEach(key => { if (displays[key]) inputs[key].value = displays[key].textContent; });
+        
+        // Reset and populate selections
+        selectedPortrait = null;
+        selectedBackdrop = null;
+        populateSelectionGalleries();
+        
         aboutModal.style.display = 'flex';
     };
 }
@@ -547,7 +633,46 @@ if (editAboutBtn) {
 if (cancelAbout) cancelAbout.onclick = () => aboutModal.style.display = 'none';
 
 if (saveAbout) {
-    saveAbout.onclick = () => {
+    saveAbout.onclick = async () => {
+        const config = JSON.parse(localStorage.getItem('git_config'));
+        const uploadModal = document.getElementById('uploadModal');
+        const statusText = document.getElementById('uploadStatus');
+        const progressBar = document.getElementById('uploadProgressBar');
+
+        // A. Handle Image Operations (Sync to Git)
+        if (selectedPortrait || selectedBackdrop) {
+            if (!config || !config.token) {
+                alert("⚠️ Local changes only: Please configure Git Settings to sync image changes online.");
+            } else {
+                uploadModal.style.display = 'flex';
+                statusText.textContent = "Initiating Branding Handshake...";
+                progressBar.style.width = '20%';
+
+                if (selectedPortrait) {
+                    statusText.textContent = "Syncing Bio Portrait...";
+                    const success = await gitCopyFile(selectedPortrait.src, 'Potrait.jpeg', config);
+                    if (success) {
+                         // Update local UI immediately
+                         const portraitImg = document.querySelector('.portrait-img');
+                         if (portraitImg) portraitImg.src = selectedPortrait.src + '?t=' + Date.now();
+                    }
+                }
+                progressBar.style.width = '60%';
+
+                if (selectedBackdrop) {
+                    statusText.textContent = "Syncing Hero Backdrop...";
+                    const success = await gitCopyFile(selectedBackdrop.src, 'backdrop.jpeg', config);
+                    if (success) {
+                         const heroImg = document.getElementById('heroImage');
+                         if (heroImg) heroImg.src = selectedBackdrop.src + '?t=' + Date.now();
+                    }
+                }
+                progressBar.style.width = '100%';
+                setTimeout(() => uploadModal.style.display = 'none', 1000);
+            }
+        }
+
+        // B. Handle Stats Data
         const statsData = {};
         Object.keys(inputs).forEach(key => {
             statsData[key] = inputs[key].value;
@@ -557,8 +682,9 @@ if (saveAbout) {
         aboutSectionTitle.textContent = profileData.title;
         aboutSectionBody.textContent = profileData.body;
         localStorage.setItem('portfolio_about', JSON.stringify(profileData));
+        
         aboutModal.style.display = 'none';
-        alert("Profile updated! Run Sync to update online.");
+        alert("Standard Protocol: Profile & Imagery Updated Successfully!");
     };
 }
 
@@ -572,15 +698,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         photos = await discoverImages();
         renderGallery(); 
         
-        // C. Random Hero Background Logic
-        if (photos.length > 0) {
-            const heroImg = document.getElementById('heroImage');
-            if (heroImg) {
-                const randomIdx = Math.floor(Math.random() * photos.length);
-                heroImg.src = photos[randomIdx].src;
-                heroImg.onload = () => heroImg.style.opacity = '1';
-                if (heroImg.complete) heroImg.style.opacity = '1';
-            }
+        // C. Hero Background Logic (Permanent Backdrop)
+        const heroImg = document.getElementById('heroImage');
+        if (heroImg) {
+            heroImg.src = 'assets/images/backdrop.jpeg';
+            heroImg.onload = () => heroImg.style.opacity = '1';
+            // Fallback for fast caching
+            if (heroImg.complete) heroImg.style.opacity = '1';
         }
     } catch (bootErr) {
         console.error("Critical Boot Error:", bootErr);
