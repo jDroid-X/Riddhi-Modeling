@@ -102,23 +102,55 @@ async function discoverImages() {
         });
     };
 
-    while (i <= 100) { // Check up to 100 images
+    const limit = 10; // Ultra-fast initial boot limit
+    while (i <= limit) { 
+        const batch = [];
+        for (let j = 0; j < maxConcurrent; j++) {
+            const idx = i + j;
+            if (idx > limit) break;
+            extensions.forEach(ext => {
+                batch.push(checkImage(`assets/images/Img${idx}.${ext}`, `Img${idx}`, ext));
+            });
+        }
+        const results = await Promise.all(batch);
+        results.forEach(r => { if (r) discovered.push(r); });
+        i += maxConcurrent;
+    }
+    return discovered;
+}
+
+async function discoverRemainingImages() {
+    const extensions = ['jpeg', 'png', 'jpg'];
+    const maxConcurrent = 5;
+    let i = 11; 
+
+    while (i <= 100) {
         const batch = [];
         for (let j = 0; j < maxConcurrent; j++) {
             const idx = i + j;
             if (idx > 100) break;
             extensions.forEach(ext => {
-                batch.push(checkImage(`assets/images/Img${idx}.${ext}`, `Img${idx}`, ext));
+                const url = `assets/images/Img${idx}.${ext}`;
+                batch.push(new Promise(res => {
+                    const img = new Image();
+                    img.onload = () => res({ src: url, caption: `Img${idx}`, ext, isTall: img.height > img.width });
+                    img.onerror = () => res(null);
+                    img.src = url;
+                    setTimeout(() => res(null), 3000);
+                }));
             });
         }
-
         const results = await Promise.all(batch);
-        results.forEach(r => { if (r) discovered.push(r); });
+        results.forEach(r => { 
+            if (r && !photos.find(p => p.src === r.src)) {
+                photos.push(r);
+            }
+        });
         i += maxConcurrent;
-        // Standard Protocol: Breathe delay for mobile CPU
-        await new Promise(r => setTimeout(r, 50));
+        await new Promise(r => setTimeout(r, 100));
     }
-    return discovered;
+    // Refresh selectors if modal is open
+    if (aboutModal.style.display === 'flex') populateSelectionGalleries();
 }
 
 const galleryObserver = new IntersectionObserver((entries) => {
@@ -650,27 +682,33 @@ if (saveAbout) {
 
                 if (selectedPortrait) {
                     statusText.textContent = "Syncing Bio Portrait...";
-                    const success = await gitCopyFile(selectedPortrait.src, 'Potrait.jpeg', config);
+                    const ext = selectedPortrait.src.split('.').pop();
+                    const fileName = `${selectedPortrait.caption}.${ext}`;
+                    const sourcePath = `${config.path}/${fileName}`;
+                    const success = await gitCopyFile(sourcePath, 'Potrait.jpeg', config);
                     if (success) {
-                         // Update local UI immediately
                          const portraitImg = document.querySelector('.portrait-img');
-                         if (portraitImg) portraitImg.src = selectedPortrait.src + '?t=' + Date.now();
+                         if (portraitImg) portraitImg.src = 'assets/images/Potrait.jpeg?t=' + Date.now();
                     }
                 }
                 progressBar.style.width = '60%';
 
                 if (selectedBackdrop) {
                     statusText.textContent = "Syncing Hero Backdrop...";
-                    const success = await gitCopyFile(selectedBackdrop.src, 'backdrop.jpeg', config);
+                    const ext = selectedBackdrop.src.split('.').pop();
+                    const fileName = `${selectedBackdrop.caption}.${ext}`;
+                    const sourcePath = `${config.path}/${fileName}`;
+                    const success = await gitCopyFile(sourcePath, 'backdrop.jpeg', config);
                     if (success) {
                          const heroImg = document.getElementById('heroImage');
-                         if (heroImg) heroImg.src = selectedBackdrop.src + '?t=' + Date.now();
+                         if (heroImg) heroImg.src = 'assets/images/backdrop.jpeg?t=' + Date.now();
                     }
                 }
                 progressBar.style.width = '100%';
                 setTimeout(() => uploadModal.style.display = 'none', 1000);
             }
         }
+        // ... rest of stats logic
 
         // B. Handle Stats Data
         const statsData = {};
@@ -694,7 +732,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         // A. Load saved content
         loadAboutContent();
 
-        // B. Discover and Render Gallery
+        // B. Discover and Render Gallery (Initial Batch)
         photos = await discoverImages();
         renderGallery(); 
         
@@ -703,9 +741,16 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (heroImg) {
             heroImg.src = 'assets/images/backdrop.jpeg';
             heroImg.onload = () => heroImg.style.opacity = '1';
-            // Fallback for fast caching
             if (heroImg.complete) heroImg.style.opacity = '1';
         }
+
+        // D. Background Discovery (Lazy Loading for Selectors)
+        setTimeout(() => {
+            discoverRemainingImages().then(() => {
+                console.log("Standard Protocol: Background discovery complete.");
+            });
+        }, 2000);
+
     } catch (bootErr) {
         console.error("Critical Boot Error:", bootErr);
     }
