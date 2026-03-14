@@ -26,6 +26,8 @@ body {
     line-height: 1.6;
 }
 
+#fileInput { display: none; }
+
 /* Custom Cursor */
 .cursor {
     width: 20px;
