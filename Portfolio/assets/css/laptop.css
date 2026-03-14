@@ -1,0 +1,23 @@
+/* ============================================================
+   LAPTOP & DESKTOP OPTIMIZATION (1100px and Above)
+   ============================================================ */
+
+/* High-End Wide Screens */
+@media (min-width: 1200px) {
+    .stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Three-Column Branding Layout (Default Laptop View) */
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.admin-modal-content.wide {
+    max-width: 1400px;
+    width: 95%;
+}
