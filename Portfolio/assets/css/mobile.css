@@ -41,16 +41,28 @@
 
     .admin-modal-content {
         width: 95%;
-        padding: 1.5rem;
-        max-height: 90vh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
+        padding: 1.2rem;
+        max-height: 95vh;
+        overflow-y: auto;
+        display: block;
     }
 
     .admin-form {
-        max-height: 50vh;
-        overflow-y: auto;
+        max-height: none;
+        overflow-y: visible;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+    .modal-actions {
+        position: sticky;
+        bottom: -1.2rem;
+        background: var(--bg-color);
+        padding: 1rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 10;
+        margin-top: 2rem;
     }
 
     .stats {
