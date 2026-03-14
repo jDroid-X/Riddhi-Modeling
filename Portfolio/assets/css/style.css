@@ -593,25 +593,27 @@ footer {
     backdrop-filter: blur(15px);
     z-index: 3000;
     justify-content: center;
-    align-items: center;
-    padding: 20px;
+    align-items: flex-start; /* Allow scrolling from top */
+    padding: 0;
+    overflow-y: auto;
 }
 
 .admin-modal-content {
     background: #111;
-    padding: 3rem;
+    padding: 3rem 3rem 120px 3rem; /* Extra bottom padding for sticky bar */
     border: 1px solid rgba(197, 160, 89, 0.3);
     width: 100%;
     max-width: 500px;
     position: relative;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    margin: 5vh auto;
 }
 
 /* Ultra-Wider modal for 3-column editing */
 .admin-modal-content.wide {
     max-width: 1400px;
     width: 95%;
-    padding: 2rem;
+    padding: 2rem 2rem 120px 2rem;
 }
 
 .admin-modal-content h3 {
@@ -717,7 +719,25 @@ footer {
 .modal-actions {
     display: flex;
     gap: 1rem;
-    margin-top: 1rem;
+    position: sticky;
+    bottom: -2rem; /* Stick to bottom of content wide area */
+    background: #111;
+    padding: 2rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+    margin-top: 2rem;
+}
+
+/* For full-screen browser mode, ensure it sticks to viewport bottom if content is tall */
+@supports (position: sticky) {
+    .modal-actions {
+        position: sticky;
+        bottom: 0;
+        transform: translateY(2rem); /* Offset the padding of parent */
+        width: calc(100% + 4rem);
+        margin-left: -2rem;
+        padding: 1.5rem 2rem;
+    }
 }
 
 .modal-actions button {
