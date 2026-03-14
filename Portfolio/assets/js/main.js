@@ -332,52 +332,118 @@ async function deletePhoto(event, name) {
     }
 }
 
-// 4. Lightbox & Zoom
+// 4. Advanced Lightbox & Zoom/Pan Engine
+let isPanningMode = false;
+let isDragging = false;
+let startX, startY, scrollLeft, scrollTop;
+let currentPosX = 0;
+let currentPosY = 0;
+const imageContainer = document.getElementById('image-container');
+
+function updateImageTransform() {
+    if (lightboxImg) {
+        lightboxImg.style.transform = `translate(${currentPosX}px, ${currentPosY}px) scale(${zoomLevel})`;
+    }
+}
+
 function openLightbox(idx) {
     currentIdx = idx;
     lightboxImg.src = photos[idx].src;
-    lightboxImg.classList.remove('zoomed');
-    lightboxImg.style.transform = 'scale(1)';
+    zoomLevel = 1;
+    currentPosX = 0;
+    currentPosY = 0;
+    isPanningMode = false;
+    document.getElementById('panTool')?.classList.remove('active');
+    lightboxImg.classList.remove('panning');
+    
     lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
-    lightboxImg.style.transformOrigin = 'center center';
+    updateImageTransform();
+    
     if (captionDisplay) captionDisplay.textContent = getPhotoMood(idx);
     lightbox.style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-if (lightboxImg) {
-    const updateZoom = (e) => {
-        // Calculate percentage of mouse position in the viewport
-        const xPercent = (e.clientX / window.innerWidth) * 100;
-        const yPercent = (e.clientY / window.innerHeight) * 100;
-        
-        // Remove transition temporarily for real-time "sticky" panning
-        lightboxImg.style.transition = 'none';
-        lightboxImg.style.transformOrigin = `${xPercent}% ${yPercent}%`;
-    };
-
-    lightboxImg.onclick = (e) => {
+if (lightboxImg && imageContainer) {
+    // Zoom Controls
+    document.getElementById('zoomIn').onclick = (e) => {
         e.stopPropagation();
-        if (zoomLevel === 1) {
-            zoomLevel = 2.5; 
-            // Re-enable transition for the initial zoom "pop"
-            lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
-            updateZoom(e);
-            lightboxImg.style.transform = `scale(${zoomLevel})`;
-            lightboxImg.classList.add('zoomed');
-        } else {
-            zoomLevel = 1;
-            lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
-            lightboxImg.style.transform = 'scale(1)';
-            lightboxImg.classList.remove('zoomed');
-        }
+        zoomLevel = Math.min(zoomLevel + 0.5, 4);
+        lightboxImg.style.transition = 'transform 0.3s ease';
+        updateImageTransform();
     };
 
-    // Track on lightbox for wider range, but logic is tied to zoomed state
-    lightbox.onmousemove = (e) => {
+    document.getElementById('zoomOut').onclick = (e) => {
+        e.stopPropagation();
+        zoomLevel = Math.max(zoomLevel - 0.5, 1);
+        if (zoomLevel === 1) { currentPosX = 0; currentPosY = 0; }
+        lightboxImg.style.transition = 'transform 0.3s ease';
+        updateImageTransform();
+    };
+
+    document.getElementById('resetView').onclick = (e) => {
+        e.stopPropagation();
+        zoomLevel = 1;
+        currentPosX = 0;
+        currentPosY = 0;
+        lightboxImg.style.transition = 'transform 0.5s ease';
+        updateImageTransform();
+    };
+
+    document.getElementById('panTool').onclick = (e) => {
+        e.stopPropagation();
+        isPanningMode = !isPanningMode;
+        document.getElementById('panTool').classList.toggle('active', isPanningMode);
+        lightboxImg.classList.toggle('panning', isPanningMode);
+    };
+
+    // Panning / Dragging Logic
+    const startDragging = (e) => {
+        if (!isPanningMode || zoomLevel <= 1) return;
+        isDragging = true;
+        lightboxImg.style.transition = 'none';
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        startX = clientX - currentPosX;
+        startY = clientY - currentPosY;
+    };
+
+    const stopDragging = () => {
+        isDragging = false;
+    };
+
+    const moveImage = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        currentPosX = clientX - startX;
+        currentPosY = clientY - startY;
+        updateImageTransform();
+    };
+
+    // Mouse Events
+    imageContainer.addEventListener('mousedown', startDragging);
+    window.addEventListener('mouseup', stopDragging);
+    window.addEventListener('mousemove', moveImage);
+
+    // Touch Events for Mobile
+    imageContainer.addEventListener('touchstart', startDragging);
+    window.addEventListener('touchend', stopDragging);
+    window.addEventListener('touchmove', moveImage);
+
+    // Double Click to Quick Zoom
+    lightboxImg.ondblclick = (e) => {
+        e.stopPropagation();
         if (zoomLevel > 1) {
-            updateZoom(e);
+            zoomLevel = 1;
+            currentPosX = 0;
+            currentPosY = 0;
+        } else {
+            zoomLevel = 2.5;
         }
+        lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)';
+        updateImageTransform();
     };
 }
 
@@ -387,11 +453,30 @@ if (closeLightboxBtn) {
         lightbox.style.display = 'none';
         document.body.style.overflow = 'auto';
         zoomLevel = 1;
+        currentPosX = 0;
+        currentPosY = 0;
     };
 }
 
-// 5. Admin Navigation
-if (adminBtn) adminBtn.onclick = () => adminModal.style.display = 'flex';
+const prevBtn = document.querySelector('.prev');
+const nextBtn = document.querySelector('.next');
+
+if (prevBtn) {
+    prevBtn.onclick = (e) => {
+        e.stopPropagation();
+        const newIdx = (currentIdx - 1 + photos.length) % photos.length;
+        openLightbox(newIdx);
+    };
+}
+
+if (nextBtn) {
+    nextBtn.onclick = (e) => {
+        e.stopPropagation();
+        const newIdx = (currentIdx + 1) % photos.length;
+        openLightbox(newIdx);
+    };
+}
+
 // 5. Admin Navigation
 if (adminBtn) adminBtn.onclick = () => adminModal.style.display = 'flex';
 if (submitAdmin) {
