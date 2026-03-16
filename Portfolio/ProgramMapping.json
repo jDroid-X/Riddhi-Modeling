@@ -1,0 +1,45 @@
+{
+  "project": "Portfolio",
+  "version": "1.0.4",
+  "hierarchy": {
+    "assets/css": {
+      "style.css": "Core styles and design tokens",
+      "mobile.css": "Responsive overrides for small screens (< 768px)",
+      "laptop.css": "Layout optimizations for larger screens (> 1100px)"
+    },
+    "assets/js": {
+      "main.js": "Main controller handling logic, admin features, and API sync"
+    },
+    "index.html": "Main entry point and UI structure"
+  },
+  "dependencies": {
+    "main.js": [
+      "index.html (DOM Elements)",
+      "GitHub API (Remote storage)",
+      "LocalStorage (State persistence)"
+    ],
+    "style.css": [
+      "Google Fonts (Playfair Display, Outfit)"
+    ]
+  },
+  "integrations": {
+    "AdminFlow": [
+      "adminBtn -> adminModal",
+      "submitAdmin -> adminToolbar",
+      "uploadBtn -> fileInput -> uploadModal",
+      "editAboutBtn -> aboutModal"
+    ],
+    "GalleryFlow": [
+      "discoverImages -> renderGallery",
+      "galleryItem click -> openLightbox"
+    ],
+    "GitSync": [
+      "saveGitConfig -> LocalStorage",
+      "deletePhoto -> GitHub API",
+      "fileInput.onchange -> uploadToGitHub"
+    ]
+  },
+  "audit_trail": {
+    "2026-03-16": "UI elements refinement for admin screens (compact, crisp, flexible)"
+  }
+}
