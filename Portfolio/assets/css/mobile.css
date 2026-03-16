@@ -20,6 +20,107 @@
         max-height: none !important;
     }
 
+    /* Compact Box for Admin Login */
+    #adminModal.admin-modal {
+        align-items: center;
+        padding: 1.5rem;
+    }
+
+    #adminModal .admin-modal-content {
+        min-height: auto;
+        width: 100%;
+        max-width: 380px;
+        border-radius: 12px;
+        border: 1px solid rgba(197, 160, 89, 0.4);
+        padding: 2rem !important;
+        margin: auto;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    }
+
+    #adminModal .modal-actions {
+        position: relative;
+        background: transparent;
+        border: none;
+        padding: 1rem 0 0 0;
+        box-shadow: none;
+        width: 100%;
+    }
+
+    /* Compact Layout for Edit Model Profile */
+    #aboutModal.admin-modal {
+        align-items: center;
+        padding: 1rem;
+    }
+
+    #aboutModal .admin-modal-content {
+        min-height: auto;
+        max-height: 92vh;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 12px;
+        border: 1px solid rgba(197, 160, 89, 0.4);
+        padding: 1.25rem 1.25rem 80px 1.25rem !important;
+        margin: auto;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        overflow-y: auto;
+    }
+
+    #aboutModal .modal-header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+    }
+
+    #aboutModal h3 {
+        font-size: 1.3rem;
+    }
+
+    #aboutModal .modal-actions {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #111;
+        padding: 1rem;
+        border-top: 1px solid var(--accent-color);
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+    }
+    
+    .form-section label {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .step-desc {
+        font-size: 0.75rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .preview-zone {
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .preview-zone img {
+        height: 120px;
+    }
+
+    .thumbnail-selector {
+        max-height: 180px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 5px;
+    }
+
+    .stats-input-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px;
+    }
+
+    .input-field input {
+        padding: 0.6rem !important;
+        margin-bottom: 0.5rem !important;
+        font-size: 0.8rem !important;
+    }
+
     .modal-step {
         width: 100%;
         animation: fadeIn 0.4s ease;
